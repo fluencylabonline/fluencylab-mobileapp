@@ -1,0 +1,41 @@
+[
+      [
+        { "starter": "POTE", "hint": "Objeto para colocar pratos", "answer": "MESA" },
+        { "starter": "MESA", "hint": "Local de moradia", "answer": "CASA" },
+        { "starter": "CASA", "hint": "Móvel para dormir", "answer": "CAMA" },
+        { "starter": "CAMA", "hint": "Tecido", "answer": "PANO" },
+        { "starter": "PANO", "hint": "Usado para escrever", "answer": "PENA" },
+        { "starter": "PENA", "hint": "Parte de um espetáculo", "answer": "CENA" },
+        { "starter": "CENA", "hint": "Sinônimo de destino", "answer": "SINA" }
+    ],
+
+    [
+      { "starter": "MATO", "hint": "Moradia", "answer": "CASA" },
+      { "starter": "CASA", "hint": "Móvel para dormir", "answer": "CAMA" },
+      { "starter": "CAMA", "hint": "Planta", "answer": "CANA" },
+      { "starter": "CANA", "hint": "Fruta vermelha", "answer": "MAÇÃ" },
+      { "starter": "MAÇÃ", "hint": "Objeto redondo", "answer": "BOLA" },
+      { "starter": "BOLA", "hint": "Parte do rosto", "answer": "BOCA" },
+      { "starter": "BOCA", "hint": "Animál doméstico", "answer": "GATO" }
+  ],
+
+  [
+      { "starter": "TIGRE", "hint": "Vemos no relógio", "answer": "HORAS" },
+      { "starter": "HORAS", "hint": "Animal comum em fazendas", "answer": "PORCO" },
+      { "starter": "PORCO", "hint": "Partes redondas de um carro", "answer": "RODAS" },
+      { "starter": "RODAS", "hint": "Parte do corpo humano", "answer": "BRACO" },
+      { "starter": "BRAÇO", "hint": "Animal símbolo do Brasil", "answer": "ONCAS" },
+      { "starter": "ONÇAS", "hint": "Judeus usavam um calendário", "answer": "LUNAR" },
+      { "starter": "LUNAR", "hint": "Tocar um instrumento musical", "answer": "VIOLA" }
+  ],
+  [
+    { "starter": "FACÃO", "hint": "Usamos para vestir", "answer": "ROUPA" },
+    { "starter": "ROUPA", "hint": "Ferramenta de corte", "answer": "ADAGA" },
+    { "starter": "ADAGA", "hint": "Animal do zodíaco chinês", "answer": "COBRA" },
+    { "starter": "COBRA", "hint": "Parte que te mantém seguro no carro", "answer": "CINTO" },
+    { "starter": "CINTO", "hint": "Metal alaranjado", "answer": "COBRE" },
+    { "starter": "COBRE", "hint": "Arma grande usada para cortar mato", "answer": "FACÃO" },
+    { "starter": "FACÃO", "hint": "Parte de uma casa", "answer": "PORTA" }
+  ]
+  ]
+  

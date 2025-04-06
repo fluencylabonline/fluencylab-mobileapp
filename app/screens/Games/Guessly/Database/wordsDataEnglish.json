@@ -1,0 +1,74 @@
+[
+  [
+    { "starter": "DOG", "hint": "Um pequeno felino", "answer": "CAT" },
+    { "starter": "CAT", "hint": "Uma estrela brilhante", "answer": "SUN" },
+    { "starter": "SUN", "hint": "Filha da sua avó", "answer": "MOM" },
+    { "starter": "MOM", "hint": "Uma cor", "answer": "RED" },
+    { "starter": "RED", "hint": "Um veículo", "answer": "CAR" },
+    { "starter": "CAR", "hint": "Veículo de esporte de inverno", "answer": "SKI" },
+    { "starter": "SKI", "hint": "Item de cabeça vestível", "answer": "HAT" }
+  ],
+  [
+    {"starter": "FLAME", "hint": "Um alimento básico comum.", "answer": "BREAD"},
+    {"starter": "BREAD", "hint": "Uma série de pensamentos, imagens e sensações que ocorrem na mente de uma pessoa durante o sono.", "answer": "DREAM"},
+    {"starter": "DREAM", "hint": "Um dispositivo que usa ondas de rádio para determinar a presença, localização e velocidade de objetos.", "answer": "RADAR"},
+    {"starter": "RADAR", "hint": "Uma fruta cítrica amarela com sabor ácido.", "answer": "LEMON"},
+    {"starter": "LEMON", "hint": "Uma máquina capaz de realizar uma série complexa de ações automaticamente.", "answer": "ROBOT"},
+    {"starter": "ROBOT", "hint": "Forma de arte e atividade cultural cujo meio é som organizado no tempo.", "answer": "MUSIC"},
+    {"starter": "MUSIC", "hint": "Algo que é misterioso e inexplicável.", "answer": "MAGIC"}
+  ],
+  [
+    {"starter": "MAGIC", "hint": "Uma fruta popular.", "answer": "APPLE"},
+    {"starter": "APPLE", "hint": "Um grande corpo de água.", "answer": "OCEAN"},
+    {"starter": "OCEAN", "hint": "Um tipo de metal.", "answer": "STEEL"},
+    {"starter": "STEEL", "hint": "Um material de construção comum.", "answer": "BRICK"},
+    {"starter": "BRICK", "hint": "Uma unidade de medida de distância.", "answer": "METER"},
+    {"starter": "METER", "hint": "Uma bebida popular.", "answer": "WATER"},
+    {"starter": "WATER", "hint": "Um tipo de fruta amarelada e avermelhada.", "answer": "MANGO"}
+  ],
+  [
+    {"starter": "COFFEE", "hint": "Um recipiente usado para fazer e servir chá.", "answer": "TEAPOT"},
+    {"starter": "TEAPOT", "hint": "A quantidade que uma xícara pode conter.", "answer": "CUPFUL"},
+    {"starter": "CUPFUL", "hint": "Refeição da noite, tomada seja ao entardecer ou à noite.", "answer": "DINNER"},
+    {"starter": "DINNER", "hint": "Um prato plano, tipicamente circular e feito de porcelana, vidro ou plástico, usado para comer ou servir comida.", "answer": "PLATES"},
+    {"starter": "PLATES", "hint": "Um pedaço quadrado de tecido ou papel usado numa refeição para limpar os dedos ou lábios e proteger as roupas.", "answer": "NAPKIN"},
+    {"starter": "NAPKIN", "hint": "Plural: ferramenta constituída por uma lâmina presa a um cabo, usada para cortar ou como arma.", "answer": "KNIFES"},
+    {"starter": "KNIFES", "hint": "Um metal brilhante, alaranjado e branco.", "answer": "COPPER"}
+  ],
+  [
+    {"starter": "BANANA", "hint": "Plural: veículo usado para transportar mercadorias por estrada.", "answer": "TRUCKS"},
+    {"starter": "TRUCKS", "hint": "Uma grande serpente venenosa encontrada em regiões tropicais.", "answer": "PYTHON"},
+    {"starter": "PYTHON", "hint": "Um planeta com anéis.", "answer": "SATURN"},
+    {"starter": "SATURN", "hint": "Uma cidade na Itália conhecida por seus canais.", "answer": "VENICE"},
+    {"starter": "VENICE", "hint": "Uma grande massa de terra cercada por água.", "answer": "ISLAND"},
+    {"starter": "ISLAND", "hint": "Um método comum de transporte subterrâneo em áreas urbanas.", "answer": "SUBWAY"},
+    {"starter": "SUBWAY", "hint": "Um veículo usado para viajar longas distâncias em estradas.", "answer": "TRUCKS"}
+  ],
+  [
+    {"starter": "RUN", "hint": "Um inseto voador conhecido por sua picada.", "answer": "BEE"},
+    {"starter": "BEE", "hint": "Uma fruta pequena e redonda com uma casca vermelha ou amarela.", "answer": "FIG"},
+    {"starter": "FIG", "hint": "Um animal doméstico comum mantido como animal de estimação.", "answer": "CAT"},
+    {"starter": "CAT", "hint": "Um veículo usado para viajar em terrenos acidentados.", "answer": "SUV"},
+    {"starter": "SUV", "hint": "Um pássaro grande conhecido por sua plumagem colorida.", "answer": "EMU"},
+    {"starter": "EMU", "hint": "Um tipo popular de frutos do mar frequentemente servido grelhado.", "answer": "COD"},
+    {"starter": "COD", "hint": "Um dispositivo usado para armazenar e organizar arquivos digitais.", "answer": "ZIP"}
+  ],
+  [
+    {"starter": "HAT", "hint": "Um tipo de veículo usado para transporte público.", "answer": "BUS"},
+    {"starter": "BUS", "hint": "Um pequeno inseto voador conhecido por sua capacidade de produzir mel.", "answer": "BEE"},
+    {"starter": "BEE", "hint": "Um animal doméstico comum conhecido por seu som de miado.", "answer": "CAT"},
+    {"starter": "CAT", "hint": "Uma fruta pequena e de casca dura, frequentemente associada a nozes.", "answer": "NUT"},
+    {"starter": "NUT", "hint": "Um tipo de fixador usado para prender objetos juntos.", "answer": "PIN"},
+    {"starter": "PIN", "hint": "Um pequeno inseto voador conhecido por seu barulho irritante.", "answer": "FLY"},
+    {"starter": "FLY", "hint": "Um animal que é rosa nos desenhos.", "answer": "PIG"}
+  ],
+  [
+    {"starter": "WIND", "hint": "Um grande inseto voador conhecido por sua picada.", "answer": "WASP"},
+    {"starter": "WASP", "hint": "Um tipo de veículo amarelo usado para transporte em estradas.", "answer": "TAXI"},
+    {"starter": "TAXI", "hint": "Uma fruta roxa e redonda frequentemente usada em saladas.", "answer": "PLUM"},
+    {"starter": "PLUM", "hint": "Um tipo de veículo usado para transporte em estradas acidentadas.", "answer": "JEEP"},
+    {"starter": "JEEP", "hint": "Satélite natural da Terra.", "answer": "MOON"},
+    {"starter": "MOON", "hint": "Um tipo de fixador usado para prender as calças de alguém.", "answer": "BELT"},
+    {"starter": "BELT", "hint": "Um pequeno inseto voador conhecido por sua picada irritante e dolorosa.", "answer": "BUGS"}
+  ]
+]

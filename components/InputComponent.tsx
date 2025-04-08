@@ -1,7 +1,7 @@
 import React from 'react';
-import { TextInput, View, StyleSheet, TextInputProps, useColorScheme, TouchableOpacity } from 'react-native';
+import { TextInput, View, StyleSheet, TextInputProps, TouchableOpacity } from 'react-native';
+import { useTheme } from '@/constants/useTheme';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Colors } from '../constants/Colors';
 import {
   useFonts,
   Quicksand_300Light,
@@ -11,8 +11,9 @@ import {
   Quicksand_700Bold,
 } from '@expo-google-fonts/quicksand';
 
+
 interface InputComponentProps extends TextInputProps {
-  iconName?: keyof typeof Ionicons.glyphMap; // Optional Ionicons name
+  iconName?: keyof typeof Ionicons.glyphMap;
   iconSize?: number;
   ref?: any;
   button?: React.ReactNode;
@@ -27,12 +28,11 @@ const InputComponent: React.FC<InputComponentProps> = ({
   onRightPress,
   ...textInputProps
 }) => {
-  const colorScheme = useColorScheme();
-  const isDarkMode = colorScheme === 'dark';
+  const { colors } = useTheme();
 
-  const backgroundColor = isDarkMode ? Colors.background.dark : Colors.background.light;
-  const textColor = isDarkMode ? Colors.text.darker : Colors.text.lighter;
-  const placeholderColor = isDarkMode ? Colors.text.darker : Colors.text.secondaryDark;
+  const backgroundColor = colors.background.list;
+  const textColor = colors.text.primary;
+  const placeholderColor = colors.text.secondary;
   const iconColor = textColor;
 
   const [fontsLoaded] = useFonts({

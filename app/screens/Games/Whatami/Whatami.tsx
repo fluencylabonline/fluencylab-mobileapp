@@ -29,7 +29,6 @@ import React, {
   import { useTheme } from "@/constants/useTheme"; // Assuming path
   import InputComponent from "@/components/InputComponent"; // Assuming path
   import ButtonComponent from "@/components/ButtonComponent"; // Assuming path
-  import { Colors } from "@/constants/Colors"; // Assuming path
   
   // Game Data
   import { wordClues } from "./Database/wordClues"; // Adjust path as needed
@@ -64,7 +63,7 @@ import React, {
   
   
   const WhatAmIGame: React.FC<WhatAmIGameProps> = ({ onClose }) => {
-    const { colors, isDark } = useTheme();
+    const { colors } = useTheme();
     const { showToast } = useToast();
   
     // User State
@@ -425,7 +424,7 @@ import React, {
               onPress={onClose} // Use onClose prop
               name="arrow-back"
               size={28}
-              color={colors.text}
+              color={colors.text.primary}
             />
           }
           // Optional: Add instructions button like TicTacToe if needed
@@ -466,10 +465,10 @@ import React, {
                   style={styles.buttonStyle}
                 />
               </View>
-               {isLoading && <ActivityIndicator size="large" color={colors.text} style={{marginTop: 10}} />}
+               {isLoading && <ActivityIndicator size="large" color={colors.text.primary} style={{marginTop: 10}} />}
   
                {/* Instructions Box */}
-              <View style={[styles.instructionsBox, { backgroundColor: colors.cardBackground }]}>
+              <View style={[styles.instructionsBox, { backgroundColor: colors.cards.primary }]}>
                   <TextComponent weight="bold" size="medium" style={styles.instructionsTitle}>
                       Como Jogar:
                   </TextComponent>
@@ -488,9 +487,9 @@ import React, {
             <View style={styles.gameAreaContainer}>
               {/* Clue Display */}
                {!winner && !isGameOverState && clues.length > 0 && (
-                   <View style={[styles.clueBox, { backgroundColor: colors.cardBackgroundSecodary || colors.cardBackground }]}>
+                   <View style={[styles.clueBox, { backgroundColor: colors.cards.secondary || colors.cards.primary }]}>
                       <TextComponent weight="bold" size="medium" style={styles.clueText}>
-                          Dica #{currentClueIndex + 1}: <TextComponent style={{color: Colors.teal.default}}>{clues[currentClueIndex]}</TextComponent>
+                          Dica #{currentClueIndex + 1}: <TextComponent style={{color: colors.colors.teal}}>{clues[currentClueIndex]}</TextComponent>
                       </TextComponent>
                    </View>
                )}
@@ -505,7 +504,7 @@ import React, {
                     editable={currentTurnPlayerId === userId && !isLoading} // Editable only on your turn & not loading
                   />
                   <ButtonComponent
-                    title={isLoading ? <ActivityIndicator size="small" color={isDark ? Colors.text.dark : Colors.text.light} /> : "Enviar Chute"}
+                    title={isLoading ? <ActivityIndicator size="small" color={colors.text.primary} /> : "Enviar Chute"}
                     onPress={handleGuess}
                     disabled={currentTurnPlayerId !== userId || isLoading || !guessInput}
                     color="teal" // Example color
@@ -514,7 +513,7 @@ import React, {
               )}
   
               {/* Guesses List */}
-              <View style={[styles.guessesContainer, { backgroundColor: colors.cardBackground }]}>
+              <View style={[styles.guessesContainer, { backgroundColor: colors.cards.primary }]}>
                   <TextComponent weight="bold" size="medium" style={styles.guessesTitle}>
                       Chutes ({guesses.length}/6):
                   </TextComponent>
@@ -542,7 +541,7 @@ import React, {
   
            {/* Loading indicator for initial game load */}
            {gameId && isLoading && (!player1Id || !player2Id) && (
-              <ActivityIndicator size="large" color={colors.text} style={{ marginTop: 30 }} />
+              <ActivityIndicator size="large" color={colors.text.primary} style={{ marginTop: 30 }} />
            )}
   
         </ScrollView>

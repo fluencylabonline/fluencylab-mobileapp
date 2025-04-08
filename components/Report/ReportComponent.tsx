@@ -2,9 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, ActivityIndicator, FlatList, StyleSheet, useColorScheme } from 'react-native';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { TextComponent } from '@/components/TextComponent';
-import { Colors } from '@/constants/Colors';
-import { db } from '@/config/firebase'; // Assuming you have a Firebase setup
+import { db } from '@/config/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
+import { useTheme } from '@/constants/useTheme';
 
 interface ReportsComponentProps {
   studentID: string;
@@ -14,9 +14,8 @@ interface ReportsComponentProps {
 const ReportsComponent: React.FC<ReportsComponentProps> = ({ studentID, onClose }) => {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const snapPoints = ['50%', '85%'];
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
   const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -53,14 +52,14 @@ const ReportsComponent: React.FC<ReportsComponentProps> = ({ studentID, onClose 
       onChange={(index) => {
         if (index === -1) onClose?.();
       }}
-      handleIndicatorStyle={{ backgroundColor: Colors.indigo.default, width: 65 }}
+      handleIndicatorStyle={{ backgroundColor: colors.colors.indigo, width: 65 }}
       backgroundStyle={{
         ...styles.bottomSheetShadow,
-        backgroundColor: isDark ? Colors.background.darker : Colors.background.lighter,
+        backgroundColor: colors.background.primary,
       }}
     >
       <BottomSheetView style={styles.container}>
-        <TextComponent weight="bold" size="large" color={isDark ? Colors.indigo.default : Colors.indigo.default} style={styles.title}>
+        <TextComponent weight="bold" size="large" color={colors.colors.indigo} style={styles.title}>
           Relatórios
         </TextComponent>
 
@@ -82,7 +81,7 @@ const ReportsComponent: React.FC<ReportsComponentProps> = ({ studentID, onClose 
             )}
           />
         ) : (
-          <TextComponent color={isDark ? Colors.text.secondaryDark : Colors.text.secondaryLight} style={{ textAlign: 'center', marginTop: 20 }}>
+          <TextComponent color={colors.text.secondary} style={{ textAlign: 'center', marginTop: 20 }}>
             Nenhum relatório encontrado.
           </TextComponent>
         )}
@@ -91,7 +90,7 @@ const ReportsComponent: React.FC<ReportsComponentProps> = ({ studentID, onClose 
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     padding: 16,
   },
@@ -108,7 +107,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   reportCard: {
-    backgroundColor: Colors.spaceBlue.lighter,
+    backgroundColor: colors.colors.spaceBlue,
     padding: 12,
     borderRadius: 10,
     marginBottom: 10,

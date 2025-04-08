@@ -1,496 +1,424 @@
-import React, { useEffect, useState } from 'react';
+// src/app/screens/Games/Vocabulary/IsPlaying/IsPlaying.tsx
+// (Adjust path as needed)
+
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
-  ScrollView,
   StyleSheet,
+  ScrollView,
   ActivityIndicator,
   TouchableOpacity,
-  ImageBackground, // Use ImageBackground for modes
+  ImageBackground,
+  Image,
+  Dimensions,
 } from 'react-native';
-import { db } from '@/config/firebase'; // Adjust path
+import { useLocalSearchParams, router } from 'expo-router';
+import { db } from '@/config/firebase';
 import { doc, onSnapshot, updateDoc, getDoc } from 'firebase/firestore';
-import { useLocalSearchParams } from 'expo-router'; // Use expo-router hook for params
+import { VocabularyItem } from '@/types'; // Adjust path if needed
 
-// Import Custom Components & Hooks
-import { useTheme } from '@/constants/useTheme'; // Adjust path
-import { useToast } from '@/components/Toast/useToast'; // Adjust path
-import { TextComponent } from '@/components/TextComponent'; // Adjust path
-import ButtonComponent from '@/components/ButtonComponent'; // Adjust path
-import Container from '@/components/ContainerComponent'; // Adjust path
-import { Colors } from '@/constants/Colors'; // Import Colors directly if needed elsewhere
+import { useTheme } from '@/constants/useTheme';
+import { TextComponent } from '@/components/TextComponent';
+import { useToast } from '@/components/Toast/useToast';
 
-// Import Game Mode Components (Make sure these are React Native components)
-import Anagram from './Modes/Anagram'; // Adjust path
-import OpenTheBox from './Modes/OpenTheBox'; // Adjust path
-import WhatIsImage from './Modes/WhatIsImage'; // Adjust path
+import Anagram from './Modes/Anagram';
+import OpenTheBox from './Modes/OpenTheBox';
+import WhatIsImage from './Modes/WhatIsImage';
 
-// Import images using require (Adjust paths as needed)
-const AnagramImg = require('@/assets/games/vocabulary/anagram.jpeg');
-const OpenTheBoxImg = require('@/assets/games/vocabulary/openthebox.jpeg');
-const WhatIsImageImg = require('@/assets/games/vocabulary/image.jpeg');
-// If other images were used, require them here too
-// const MatchUpImg = require('@/assets/images/games/match.jpeg');
-// const QuizImg = require('@/assets/images/games/quiz.jpeg');
-// const WordsearchImg = require('@/assets/images/games/wordsearch.jpeg');
+import TopBarComponent from '@/components/TopBarComponent';
+import { Ionicons } from '@expo/vector-icons';
+import Container from '@/components/ContainerComponent';
+// --- Game Mode Components (Placeholders - Replace with actual components) ---
+// -----------------------------------------
 
-// Define Game Modes available in RN version
+
+interface Player {
+  id: string;
+  name?: string;
+}
+
+interface GameData { // For multiplayer game state from 'games' collection
+  players: string[];
+  gameMode: string | null;
+  VocabularyGameID: string;
+  // Add other fields from your 'games' document structure
+}
+
+// --- Game Mode Definitions (Adjust require paths) ---
 const gameModes = [
-  { name: 'Anagrama', img: AnagramImg, modeKey: 'anagram' }, // Add modeKey if needed later
-  { name: 'Caixa surpresa', img: OpenTheBoxImg, modeKey: 'openthebox' },
-  { name: 'Qual a imagem', img: WhatIsImageImg, modeKey: 'whatisimage' },
+  { name: 'Anagrama', img: require('@/assets/games/vocabulary/anagram.jpeg') },
+  { name: 'Caixa surpresa', img: require('@/assets/games/vocabulary/openthebox.jpeg') },
+  { name: 'Qual a imagem', img: require('@/assets/games/vocabulary/image.jpeg') },
 ];
+// ----------------------------
 
-export default function IsPlayingScreen() { // Changed name slightly to indicate it's a screen
+export default function IsPlaying() {
   const { colors } = useTheme();
   const { showToast } = useToast();
-  const params = useLocalSearchParams<{ gameID?: string; aloneGameID?: string; gameName?: string, isSingleplayer?: string }>(); // Type the params
+  const params = useLocalSearchParams();
 
-  const [gameID, setGameID] = useState<any | null>(null); // Actual game instance ID (multiplayer) or template ID (singleplayer)
-  const [gameMode, setGameMode] = useState<string | null>(null); // e.g., 'Anagrama'
-  const [isGameModeSelected, setIsGameModeSelected] = useState(false);
-  const [gameData, setGameData] = useState<any>(null); // Multiplayer game document data
-  const [vocabularyData, setVocabularyData] = useState<any[]>([]); // Words/images for the game
-  const [gameName, setGameName] = useState('');
+  // --- State ---
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const [gameSessionId, setGameSessionId] = useState<string | null>(null); // Holds the Firestore doc ID passed as 'gameID'
   const [isSingleplayer, setIsSingleplayer] = useState(false);
-  const [firstPlayerName, setFirstPlayerName] = useState<string | null>(null);
-  const [secondPlayerName, setSecondPlayerName] = useState<string | null>(null);
+  const [gameName, setGameName] = useState<string>('');
 
-  // Loading states
-  const [isLoadingParams, setIsLoadingParams] = useState(true);
-  const [isLoadingGameData, setIsLoadingGameData] = useState(true); // Combined loading for game/vocab
-  const [isLoadingPlayerNames, setIsLoadingPlayerNames] = useState(false);
+  const [gameMode, setGameMode] = useState<string | null>(null);
+  const [isGameModeSelected, setIsGameModeSelected] = useState(false);
 
-  // --- Effect 1: Process Route Parameters ---
+  const [vocabularyList, setVocabularyList] = useState<VocabularyItem[]>([]);
+
+  // Multiplayer specific state
+  const [multiplayerGameData, setMultiplayerGameData] = useState<GameData | null>(null);
+  const [playersInfo, setPlayersInfo] = useState<Player[]>([]);
+
+  // --- Effects ---
+
+  // Initial setup: Determine mode and ID using the simpler logic structure
   useEffect(() => {
-    setIsLoadingParams(true);
-    setIsLoadingGameData(true); // Reset game data loading too
-    // console.log("Route Params:", params); // Log params for debugging
+    setIsLoading(true);
+    setError(null);
 
-    const multiplayerGameId = params.gameID;
-    const singleplayerGameId = params.aloneGameID;
-    const singleplayerParam = params.isSingleplayer === 'true'; // Expo Router params are strings
+    // Extract parameters based on the simpler example's expected names
+    const currentId = params.gameID as string | undefined;
+    const singleplayerParam = params.isSingleplayer as string;
+    const gameDataString = params.gameData as string | undefined;
+    const vocabularyDataString = params.vocabularyData as string | undefined;
 
-    if (multiplayerGameId) {
-      // console.log("Setting up Multiplayer:", multiplayerGameId);
-      setGameID(multiplayerGameId);
-      setIsSingleplayer(false);
-      setGameName(params.gameName || ''); // Get name if passed for multiplayer lobby
-      setIsLoadingParams(false);
-      // Game data loading will be handled by Effect 2
-    } else if (singleplayerGameId) {
-      // console.log("Setting up Single Player:", singleplayerGameId);
-      setGameID(singleplayerGameId); // Use the template ID as the 'gameID' for single player context
-      setIsSingleplayer(true); // <<<--- Set isSingleplayer here
-      setIsLoadingParams(false);
-
-      // Fetch vocabulary game template data for singleplayer immediately
-      const vocabRef = doc(db, 'VocabularyGame', singleplayerGameId);
-      getDoc(vocabRef).then((vocabDoc) => {
-        if (vocabDoc.exists()) {
-          const vocabData = vocabDoc.data();
-          setVocabularyData(vocabData?.vocabularies || []);
-          setGameName(vocabData?.name || params.gameName || 'Jogo Solo'); // Use fetched name, fallback to param or default
-          setIsGameModeSelected(false); // User needs to select the game mode
-          // console.log("Single Player Vocab Loaded:", vocabData?.name);
-        } else {
-          showToast('Tema de vocabulário não encontrado.', 'error');
-          console.error('Vocabulary game not found for ID:', singleplayerGameId);
-        }
-      }).catch(error => {
-        showToast('Erro ao buscar dados do tema.', 'error');
-        console.error('Error fetching single player vocab:', error);
-      }).finally(() => {
-        setIsLoadingGameData(false); // Finished loading game data attempt for single player
-      });
-    } else {
-      // No valid ID found
-      console.error("No gameID or aloneGameID found in route parameters.");
-      setIsLoadingParams(false);
-      setIsLoadingGameData(false);
-    }
-
-  }, [params]); // Rerun when params change
-
-  // --- Effect 2: Multiplayer Game Listener & Vocab Fetch ---
-  useEffect(() => {
-    // Log values immediately upon entry for debugging
-    // console.log(`Effect 2 ENTRY: isLoadingParams=${isLoadingParams}, gameID=${gameID}, isSingleplayer=${isSingleplayer}`);
-
-    // --->>> FIX: Robust Check for Single Player <<<---
-    // If it's determined to be single player, DO NOT proceed with multiplayer logic.
-    if (isSingleplayer) {
-      // console.log("Effect 2 returning early: isSingleplayer is true.");
-      // Ensure loading is false since single player data is handled in Effect 1
-      if (!isLoadingParams) { // Only set loading false if params are also done processing
-          setIsLoadingGameData(false);
-      }
-      return; // <<<--- Exit the effect entirely
-    }
-    // --->>> END OF FIX <<<---
-
-    // If it's still loading parameters or doesn't have a gameID yet (for multiplayer setup)
-    if (isLoadingParams || !gameID) {
-        // console.log(`Effect 2 returning: isLoadingParams=${isLoadingParams}, !gameID=${!gameID}`);
-        // Don't set loading false here yet for multiplayer, wait for listener setup or failure
-        return;
-    }
-
-    // --- This part should now ONLY execute for MULTIPLAYER games ---
-    // console.log("Effect 2 Setting up listener for Multiplayer Game:", gameID); // Log confirms it's multiplayer
-    setIsLoadingGameData(true); // Start loading for multiplayer data
-
-    const gameRef = doc(db, 'games', gameID); // This is now safe, gameID refers to 'games' collection
-    const unsubscribeGame = onSnapshot(gameRef, async (docSnap) => { // Make async to await getDoc inside
-        const data = docSnap.data();
-        if (data) {
-            // console.log("Multiplayer Game Data Received:", data);
-            setGameData(data); // Store the whole game document
-            const currentMode = data.gameMode || null;
-            setGameMode(currentMode);
-            setIsGameModeSelected(!!currentMode);
-
-            // Fetch associated VocabularyGame data if needed (logic remains the same)
-            if (data.VocabularyGameID && (!vocabularyData.length || gameData?.VocabularyGameID !== data.VocabularyGameID)) {
-                try {
-                    const vocabRef = doc(db, 'VocabularyGame', data.VocabularyGameID);
-                    const vocabDoc = await getDoc(vocabRef);
-                    if (vocabDoc.exists()) {
-                        const vocabGameDetails = vocabDoc.data();
-                        setVocabularyData(vocabGameDetails?.vocabularies || []);
-                        setGameName(currentGameName => currentGameName || vocabGameDetails?.name || 'Jogo Multiplayer');
-                        // console.log("Multiplayer Associated Vocab Loaded:", vocabGameDetails?.name);
-                    } else {
-                        showToast('Tema de vocabulário associado não encontrado.', 'error');
-                        setVocabularyData([]);
-                    }
-                } catch(error) {
-                    showToast('Erro ao buscar tema de vocabulário.', 'error');
-                    console.error("Error fetching associated vocab:", error);
-                    setVocabularyData([]);
-                } finally {
-                    // Set loading false only after potential async vocab fetch is done
-                    setIsLoadingGameData(false);
-                }
-            } else if (!data.VocabularyGameID) {
-                // Handle case where multiplayer game exists but has no VocabularyGameID link
-                showToast('Configuração de tema inválida para este jogo.', 'error')
-                setVocabularyData([]);
-                setIsLoadingGameData(false);
-            }
-             else {
-                // No vocab fetch needed or already have data
-                setIsLoadingGameData(false);
-            }
-        } else {
-            // Game document *actually* not found for this multiplayer ID
-            showToast('Instância do jogo não encontrada.', 'error');
-            console.error('Multiplayer game document not found for ID:', gameID);
-            setIsLoadingGameData(false);
-            setGameData(null); // Clear game data
-        }
-    }, (error) => {
-        showToast('Erro ao ouvir atualizações do jogo.', 'error');
-        console.error('Error in game snapshot listener:', error);
-        setIsLoadingGameData(false);
-        setGameData(null);
-    });
-
-    // Cleanup function
-    return () => {
-        // console.log("Unsubscribing from Multiplayer Game:", gameID);
-        unsubscribeGame();
-    }
-  }, [gameID, isSingleplayer, isLoadingParams, showToast]); // Added showToast to dependency array
+    console.log("--- IsPlaying Params Received ---");
+    console.log("gameID:", currentId);
+    console.log("isSingleplayer:", singleplayerParam);
+    console.log("gameData:", gameDataString ? 'Exists' : 'Missing');
+    console.log("vocabularyData:", vocabularyDataString ? 'Exists' : 'Missing');
+    console.log("-------------------------------");
 
 
-  // --- Effect 3: Fetch Player Names (Multiplayer) ---
-  useEffect(() => {
-    // Only run if multiplayer, gameData is loaded, and players array exists
-    if (!gameData || !Array.isArray(gameData.players) || gameData.players.length === 0 || isSingleplayer) {
-      setFirstPlayerName(null);
-      setSecondPlayerName(null);
+    if (!currentId) {
+      // If 'gameID' param itself is missing
+      setError('ID do jogo não fornecido na navegação.');
+      setIsLoading(false);
       return;
     }
 
-    setIsLoadingPlayerNames(true);
-    const playerIds = gameData.players;
+    const isSingle = singleplayerParam === 'true';
+    setGameSessionId(currentId); // Use the passed 'gameID' as the session ID
+    setIsSingleplayer(isSingle);
 
-    const fetchName = async (playerId: string): Promise<string | null> => {
-      if (!playerId) return null;
+    if (isSingle) {
+      // Singleplayer: Expect 'gameData' and 'vocabularyData' to also be present
+      if (!gameDataString || !vocabularyDataString) {
+         console.error("Singleplayer mode, but gameData or vocabularyData missing!");
+         setError('Dados incompletos para jogo singleplayer (gameData ou vocabularyData ausente).');
+         setIsLoading(false);
+         return;
+      }
       try {
-        const userRef = doc(db, 'users', playerId);
-        const userDoc = await getDoc(userRef);
-        // Use a fallback if name is missing
-        return userDoc.exists() ? userDoc.data()?.name || `Jogador (${playerId.substring(0, 4)})` : `Jogador (${playerId.substring(0, 4)})`;
-      } catch (error) {
-        console.error(`Error fetching name for player ${playerId}:`, error);
-        return `Erro (${playerId.substring(0, 4)})`; // Indicate error but don't crash
-      }
-    };
+        const parsedGameData = JSON.parse(gameDataString);
+        const parsedVocabularyData: VocabularyItem[] = JSON.parse(vocabularyDataString);
 
-    // Fetch names concurrently
-    Promise.all(playerIds.map(fetchName))
-      .then(names => {
-         // console.log("Fetched player names:", names);
-         setFirstPlayerName(names[0] || 'Jogador 1');
-         setSecondPlayerName(names[1] || (playerIds.length > 1 ? 'Jogador 2' : null)); // Handle case with only one player initially
-      })
-      .catch(error => {
-         console.error("Error fetching player names:", error);
-         showToast('Erro ao buscar nomes dos jogadores.', 'error');
-         // Set defaults even on error
-         setFirstPlayerName('Jogador 1');
-         setSecondPlayerName(playerIds.length > 1 ? 'Jogador 2' : null);
-      })
-      .finally(() => {
-         setIsLoadingPlayerNames(false);
-      });
-
-  }, [gameData, isSingleplayer]); // Rerun only when gameData changes (and it's multiplayer)
-
-  // --- Handlers ---
-  const handleGameModeChange = async (modeName: string) => {
-    try {
-      if (!isSingleplayer && gameID) {
-        // Update gameMode in Firestore only for multiplayer games
-        const gameRef = doc(db, 'games', gameID);
-        await updateDoc(gameRef, { gameMode: modeName });
-        // No need to set local state here, the onSnapshot listener will do it
-        showToast(`Modo de jogo definido para: ${modeName}`, 'success');
-      } else {
-        // For single player, just set local state
-        setGameMode(modeName);
-        setIsGameModeSelected(true);
-        showToast(`Modo de jogo selecionado: ${modeName}`, 'success');
-      }
-    } catch (error) {
-      showToast('Erro ao mudar o modo de jogo', 'error');
-      console.error("Error updating game mode:", error);
-    }
-  };
-
-  const handleChangeMode = () => {
-     if(!isSingleplayer && gameID){
-        // Optionally reset the mode in Firestore for multiplayer
-         const gameRef = doc(db, 'games', gameID);
-         updateDoc(gameRef, { gameMode: null }).catch(err => console.error("Error resetting game mode:", err));
-         // Let the listener reset local state for multiplayer
-     } else {
-        // Reset local state directly for single player
-        setIsGameModeSelected(false);
+        setGameName(parsedGameData?.name || 'Tema Desconhecido');
+        setVocabularyList(parsedVocabularyData);
+        setIsGameModeSelected(false); // Always start by selecting mode in singleplayer
         setGameMode(null);
-     }
-  };
+        setIsLoading(false); // Loading finished for singleplayer setup
+      } catch (e: any) {
+        console.error('Error parsing singleplayer data:', e);
+        setError(`Falha ao carregar dados do jogo singleplayer: ${e.message}`);
+        setIsLoading(false);
+      }
+    } else {
+      // Multiplayer: We have the 'gameID' (which is the multiplayer session ID).
+      // The listener in the next effect will handle fetching data.
+      // Keep loading = true until listener provides data.
+      console.log(`Multiplayer mode detected. Game session ID: ${currentId}. Waiting for listener...`);
+    }
+    // **Important**: Ensure dependencies cover all params used
+  }, [params.gameID, params.isSingleplayer, params.gameData, params.vocabularyData]);
 
-  // --- Render Logic ---
-  const renderGameModeComponent = () => {
-    // Ensure vocab data is loaded before attempting to render game mode
-    if (vocabularyData.length === 0) {
-       return (
-            <View style={styles.centerContent}>
-                <ActivityIndicator color={colors.secondaryText}/>
-                <TextComponent style={{marginTop: 10, color: colors.secondaryText}}>Carregando dados do vocabulário...</TextComponent>
-            </View>
-       );
+
+  // Effect for Multiplayer: Listen to game document changes
+  useEffect(() => {
+    // This effect only runs for MULTIPLAYER mode when gameSessionId is set
+    if (isSingleplayer || !gameSessionId) {
+      setMultiplayerGameData(null);
+      setPlayersInfo([]);
+      return; // Exit if not in multiplayer or no ID yet
     }
 
-    // Render based on selected mode
-    switch (gameMode) {
-      case 'Anagrama':
-        // Pass only necessary props, maybe simplify what gets passed down
-        return <Anagram gameID={gameID} vocabularyData={vocabularyData} isSinglePlayer={isSingleplayer} />;
-      default:
-        return <TextComponent style={{color: colors.text}}>Modo de jogo '{gameMode}' não implementado.</TextComponent>;
-    }
-  };
+    console.log(`Attaching MULTIPLAYER listener to games/${gameSessionId}`);
+    // Ensure loading is true when listener starts for multiplayer
+    // Note: setIsLoading(true) was moved here from the previous effect for multiplayer case
+    // to ensure it stays true until this listener gets data.
+    // If the previous effect already set loading=false for singleplayer, this won't run.
+    setIsLoading(true);
 
-  // Initial Loading State (Params or initial game data fetch)
-  if (isLoadingParams || isLoadingGameData) {
+    const gameRef = doc(db, 'games', gameSessionId); // Assumes gameSessionId is the multiplayer ID here
+    const unsubscribe = onSnapshot(gameRef,
+      async (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data() as GameData;
+          console.log('Multiplayer Snapshot Data:', data);
+          setMultiplayerGameData(data);
+          setGameMode(data.gameMode);
+          setIsGameModeSelected(!!data.gameMode);
+
+          // Fetch Vocabulary if needed
+          if (data.VocabularyGameID && (!vocabularyList.length || multiplayerGameData?.VocabularyGameID !== data.VocabularyGameID)) {
+              try {
+                  // ... (Vocabulary fetching logic remains the same)
+                  const vocabRef = doc(db, 'VocabularyGame', data.VocabularyGameID);
+                  const vocabDoc = await getDoc(vocabRef);
+                  if (vocabDoc.exists()) {
+                      const vocabData = vocabDoc.data();
+                      setVocabularyList(vocabData?.vocabularies || []);
+                      setGameName(vocabData?.name || 'Tema Desconhecido'); // Set game name from vocab theme
+                      console.log(`Vocabulary loaded for multiplayer game from ${data.VocabularyGameID}`);
+                  } else {
+                      setError('Tema de vocabulário associado não encontrado.');
+                      setVocabularyList([]);
+                  }
+              } catch(e) {
+                  console.error("Error fetching vocabulary for multiplayer:", e);
+                  setError('Erro ao buscar vocabulário do jogo.');
+                  setVocabularyList([]);
+              }
+          } else if (!data.VocabularyGameID) {
+              console.warn("Multiplayer game data missing VocabularyGameID!");
+              // Decide how to handle this - maybe clear vocab list?
+              // setVocabularyList([]);
+          }
+
+          // Fetch Player Names if needed
+          const currentPlayerIds = playersInfo.map(p => p.id).sort().join(',');
+          const newPlayerIds = data.players?.sort().join(',') || '';
+          if (data.players && newPlayerIds !== currentPlayerIds) {
+             try {
+                // ... (Player name fetching logic remains the same)
+                const playerPromises = data.players.map(playerId => getDoc(doc(db, 'users', playerId)));
+                const playerDocs = await Promise.all(playerPromises);
+                const fetchedPlayersInfo = playerDocs.map((playerDoc, index) => ({
+                    id: data.players[index],
+                    name: playerDoc.exists() ? playerDoc.data()?.name || `Jogador ${index + 1}` : `Jogador ${index + 1}`
+                }));
+                setPlayersInfo(fetchedPlayersInfo);
+                console.log("Player info updated:", fetchedPlayersInfo);
+             } catch(e) {
+                 console.error("Error fetching player names:", e);
+                 setError('Erro ao buscar nomes dos jogadores.');
+                 setPlayersInfo(data.players.map((id, index) => ({ id, name: `Jogador ${index + 1}` })));
+             }
+          }
+          // Only set loading to false once essential multiplayer data is processed
+          setIsLoading(false);
+        } else {
+          console.error(`Multiplayer game document games/${gameSessionId} not found.`);
+          setError('Sessão de jogo multiplayer não encontrada.');
+          setIsLoading(false);
+        }
+      },
+      (error) => {
+        console.error('Error listening to multiplayer game:', error);
+        setError('Erro ao conectar com o jogo multiplayer.');
+        setIsLoading(false);
+      }
+    );
+
+    return () => {
+      console.log(`Detaching MULTIPLAYER listener from games/${gameSessionId}`);
+      unsubscribe();
+    };
+  }, [gameSessionId, isSingleplayer]); // Rerun ONLY if gameSessionId or isSingleplayer changes
+
+  // --- Callbacks (handleGameModeChange, handleChangeMode) remain the same ---
+  const handleGameModeChange = useCallback(async (mode: string) => {
+    // ... (no changes needed here)
+    if (!isSingleplayer && gameSessionId) {
+      try {
+        const gameRef = doc(db, 'games', gameSessionId);
+        await updateDoc(gameRef, { gameMode: mode });
+        showToast(`Modo de jogo definido para: ${mode}`, 'success');
+      } catch (error) {
+        console.error('Error updating game mode:', error);
+        showToast('Erro ao mudar o modo de jogo no servidor.', 'error');
+      }
+    } else {
+      setGameMode(mode);
+      setIsGameModeSelected(true);
+      showToast(`Modo de jogo selecionado: ${mode}`, 'success');
+    }
+  }, [isSingleplayer, gameSessionId, showToast]);
+
+  const handleChangeMode = useCallback(() => {
+    // ... (no changes needed here)
+    setIsGameModeSelected(false);
+    setGameMode(null);
+    showToast('Selecione um novo modo de jogo.', 'info');
+  }, []);
+
+  // --- Render Logic (Loading, Error, Fallback) remains the same ---
+
+  if (isLoading) {
+    // ... Loading UI ...
      return (
-         <Container style={styles.centerContent}>
-             <ActivityIndicator size="large" color={colors.secondaryText} />
-             <TextComponent style={{ color: colors.secondaryText, marginTop: 10 }}>
-                 Carregando jogo...
-                 {gameID}
-             </TextComponent>
-         </Container>
-     );
-  }
-
-  // Invalid State (No ID or Multiplayer data failed to load)
-  if (!gameID || (!isSingleplayer && !gameData)) {
-    return (
-      <Container style={styles.centerContent}>
-        <TextComponent style={{ color: colors.secondaryText }}>
-          Código de jogo inválido ou não encontrado.
+      <View style={[styles.container, styles.centerContent, { backgroundColor: colors.cards.primary }]}>
+        <ActivityIndicator size="large" color={colors.text.primary} />
+        <TextComponent style={{ color: colors.text.secondary, marginTop: 10 }}>
+          {isSingleplayer ? 'Carregando jogo...' : 'Conectando ao jogo multiplayer...'}
         </TextComponent>
-      </Container>
+      </View>
     );
   }
 
-  // Main Render
-  return (
-    <Container style={styles.outerContainer}>
-        {/* Header Section */}
-        <View style={styles.header}>
-             {(!isSingleplayer && firstPlayerName) && (
-                <TextComponent style={styles.playerName} numberOfLines={1}>
-                    J1: {isLoadingPlayerNames ? '...' : firstPlayerName}
-                </TextComponent>
-            )}
-             <TextComponent weight="bold" size="large" style={styles.gameModeTitle} numberOfLines={1}>
-                 {/* Show selected mode, fallback to game name */}
-                 {isGameModeSelected ? gameMode : (gameName || 'Selecionar Modo')}
-             </TextComponent>
-            {isGameModeSelected && (
-                 <ButtonComponent
-                    title="Mudar Modo" // Shorter title
-                    onPress={handleChangeMode}
-                    color="amber"
-                    style={styles.changeModeButton} // Add specific style if needed
-                 />
-            )}
-             {(!isSingleplayer && secondPlayerName) && (
-                <TextComponent style={styles.playerName} numberOfLines={1}>
-                    J2: {isLoadingPlayerNames ? '...' : secondPlayerName}
-                </TextComponent>
-            )}
-            {/* Placeholder if only one name/button visible to help balance layout */}
-             {isSingleplayer && !isGameModeSelected && <View style={{width: 50}}/> /* Adjust width as needed */}
-             {!isGameModeSelected && !secondPlayerName && firstPlayerName && <View style={{width: 50}}/>}
-        </View>
+  if (error) {
+    // ... Error UI ...
+    return (
+      <View style={[styles.container, styles.centerContent, { backgroundColor: colors.cards.primary }]}>
+        <TextComponent weight="semibold" style={[styles.errorText, { color: colors.text.primary }]}>
+          Erro
+        </TextComponent>
+        <TextComponent style={[styles.errorText, { color: colors.text.secondary, textAlign: 'center' }]}>
+          {error}
+        </TextComponent>
+        <TouchableOpacity onPress={() => router.back()} style={[styles.button, { backgroundColor: colors.cards.secondary, marginTop: 20 }]}>
+            <TextComponent style={{ color: colors.text.primary }}>Voltar</TextComponent>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
-        {/* Content Area */}
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-            {!isGameModeSelected ? (
-            // --- Game Mode Selection ---
-            <View style={styles.modeSelectionContainer}>
-                <TextComponent weight="bold" size="xLarge" style={[styles.selectModeTitle, {color: colors.text}]}>
-                Escolha um modo de jogo
-                </TextComponent>
-                <View style={styles.modesGrid}>
-                {gameModes.map((mode) => (
-                    <TouchableOpacity
-                        key={mode.name}
-                        style={styles.modeCardTouchable}
-                        onPress={() => handleGameModeChange(mode.name)}
-                        activeOpacity={0.7} // Standard touch feedback
-                    >
-                        <ImageBackground
-                            source={mode.img}
-                            style={styles.modeCardBackground}
-                            imageStyle={styles.modeCardImageStyle} // Apply borderRadius to image
-                            resizeMode="cover"
-                        >
-                            {/* Dark overlay for better text visibility */}
-                            <View style={styles.modeCardOverlay} />
-                            <TextComponent weight="bold" size="xLarge" style={styles.modeCardText}>
-                                {mode.name}
-                            </TextComponent>
-                        </ImageBackground>
-                    </TouchableOpacity>
-                ))}
-                </View>
+  // --- Main Render Content (renderGameContent function and main return) remains the same ---
+  const renderGameContent = () => {
+    // ... (Mode Selection UI or Game Component logic remains the same) ...
+    if (!isGameModeSelected) {
+      // Render Game Mode Selection Grid...
+       return (
+        <View style={styles.modeSelectionContainer}>
+           {/* ... Mode Selection Title ... */}
+          <TextComponent weight="bold" size="large" style={[styles.modeSelectionTitle, { color: colors.text.primary }]}>
+            Escolha um modo de jogo
+          </TextComponent>
+          {/* ... Mode Selection Grid ... */}
+          <View style={styles.modeGrid}>
+            {gameModes.map((mode) => (
+              <TouchableOpacity
+                key={mode.name}
+                style={[styles.modeItem, { backgroundColor: colors.cards.secondary }]}
+                onPress={() => handleGameModeChange(mode.name)}
+              >
+                 {/* ... ImageBackground with Overlay and Text ... */}
+                 <ImageBackground source={mode.img} style={styles.modeImageBackground} imageStyle={styles.modeImage} resizeMode="cover">
+                    <View style={styles.modeOverlay} />
+                    <TextComponent weight="bold" size="large" style={styles.modeText}>{mode.name}</TextComponent>
+                 </ImageBackground>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      );
+    } else if (gameMode && vocabularyList.length > 0) {
+       // Render Selected Game Mode Component based on gameMode...
+       switch (gameMode) {
+        case 'Anagrama': return <Anagram
+        gameSessionId={gameSessionId}
+        isSingleplayer={isSingleplayer}
+        vocabularyList={vocabularyList}
+      />
+        case 'Caixa surpresa': return <OpenTheBox
+        gameSessionId={gameSessionId}
+        isSingleplayer={isSingleplayer}
+        vocabularyList={vocabularyList}
+        />;
+        case 'Qual a imagem': return <WhatIsImage
+        gameSessionId={gameSessionId}
+        isSingleplayer={isSingleplayer}
+        vocabularyList={vocabularyList}
+        />;
+        default:
+          return (
+            <View style={styles.centerContent}>
+              <TextComponent style={{ color: colors.text.secondary }}>Componente para '{gameMode}' não implementado.</TextComponent>
             </View>
-            ) : (
-             // --- Render Selected Game Mode Component ---
-             renderGameModeComponent()
-            )}
-        </ScrollView>
+          );
+      }
+    } else if (gameMode && vocabularyList.length === 0 && !isSingleplayer) {
+        // Handle case where multiplayer game started but vocabulary isn't loaded yet or failed
+        return (
+            <View style={styles.centerContent}>
+              <ActivityIndicator color={colors.text.primary} />
+              <TextComponent style={{ color: colors.text.secondary, marginTop: 10 }}>Carregando vocabulário...</TextComponent>
+            </View>
+          );
+    } else if (gameMode && vocabularyList.length === 0 && isSingleplayer) {
+         // This case shouldn't happen with the validation, but as a fallback
+         return (
+            <View style={styles.centerContent}>
+               <TextComponent style={{ color: colors.text.secondary }}>Erro: Vocabulário vazio para jogo singleplayer.</TextComponent>
+            </View>
+         );
+    }
+    return null; // Should not happen in normal flow
+  };
+
+  // --- Main return structure with Top Bar and Game Area ---
+  return (
+    <Container
+    >
+      <View style={styles.topBar}>
+            {/* ... Player 1 Info / Singleplayer indicator ... */}
+            <View style={styles.playerInfo}>
+              {!isSingleplayer && playersInfo.length > 0 && (<TextComponent size="small" style={{ color: colors.text.secondary }}>{playersInfo[0]?.name || '...'}</TextComponent>)}
+               {isSingleplayer && (<TextComponent size="small" style={{ color: colors.text.secondary }}>Um Jogador</TextComponent>)}
+            </View>
+            {/* ... Game Mode / Title / Change Button ... */}
+            <View style={styles.gameModeDisplay}>
+                <TextComponent weight="bold" size="medium" style={{ color: colors.text.primary }} numberOfLines={1} ellipsizeMode="tail">
+                  {isGameModeSelected ? gameMode : gameName || 'Carregando...'}
+                </TextComponent>
+                 {isGameModeSelected && (
+                     <TouchableOpacity onPress={handleChangeMode} style={styles.changeModeButton}>
+                         <TextComponent size="small" style={{ color: colors.cards.secondary }}>Trocar modo</TextComponent>
+                     </TouchableOpacity>
+                 )}
+            </View>
+            {/* ... Player 2 Info ... */}
+            <View style={styles.playerInfo}>
+                 {!isSingleplayer && playersInfo.length > 1 && (<TextComponent size="small" style={{ color: colors.text.secondary, textAlign: 'right' }}>{playersInfo[1]?.name || '...'}</TextComponent>)}
+            </View>
+      </View>
+
+      {/* --- Main Game Area --- */}
+      <View style={styles.gameArea}>
+        {renderGameContent()}
+      </View>
+
     </Container>
   );
 }
 
-// --- Styles ---
+// --- Styles (remain the same) ---
+const screenWidth = Dimensions.get('window').width;
+const modeItemSize = (screenWidth - 60) / 2;
+
 const styles = StyleSheet.create({
-  outerContainer: {
-    flex: 1,
-  },
-  centerContent: {
-     flex: 1,
-     justifyContent: 'center',
-     alignItems: 'center',
-     padding: 20,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 12, // Adjust padding
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.indigo.lightest, // Use a theme color
-    minHeight: 50, // Ensure header has minimum height
-  },
-   playerName: {
-       fontSize: 14,
-       fontWeight: '500',
-       flex: 1, // Allow names to take space
-       textAlign: 'center', // Center text within their space
-   },
-  gameModeTitle: {
-    fontSize: 18,
-    textAlign: 'center',
-    marginHorizontal: 8,
-    flex: 2, // Give title more space than names/button
-    fontWeight: 'bold',
-  },
-  changeModeButton: {
-      // Add specific styles if ButtonComponent doesn't support size="small" well
-      // e.g., paddingVertical: 6, paddingHorizontal: 10
-      flex: 1, // Allow button to take space
-      minWidth: 100, // Prevent button from becoming too small
-      alignItems: 'center', // Center content if ButtonComponent needs it
-  },
-  scrollContent: {
-    flexGrow: 1, // Ensure content can grow to fill ScrollView
-    padding: 15,
-  },
-  modeSelectionContainer: {
-    alignItems: 'center',
-  },
-  selectModeTitle: {
-    marginBottom: 25,
-    // color: Colors.indigo.darkest, // Applied dynamically using colors.text
-    fontSize: 24, // Larger title
-  },
-  modesGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 20, // Use gap for spacing between items
-  },
-  modeCardTouchable: {
-    width: 150, // Fixed width for cards
-    height: 160, // Fixed height for cards
-    borderRadius: 12,
-    overflow: 'hidden', // Clip the ImageBackground
-    elevation: 4, // Android shadow
-    shadowColor: '#000', // iOS shadow
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    backgroundColor: Colors.indigo.lightest, // Background behind image
-  },
-  modeCardBackground: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modeCardImageStyle: {
-     borderRadius: 12, // Match parent's borderRadius
-     opacity: 0.6, // Make image slightly transparent
-  },
-  modeCardOverlay: {
-      ...StyleSheet.absoluteFillObject, // Cover the entire background
-      backgroundColor: 'rgba(0,0,0,0.4)', // Darker overlay
-      borderRadius: 12,
-  },
-  modeCardText: {
-    color: '#FFFFFF', // White text
-    textAlign: 'center',
-    paddingHorizontal: 5, // Add some padding
-    fontSize: 20, // Adjust text size
-    // zIndex: 1, // Ensure text is above overlay (usually default behavior)
-  },
+  // ... (Styles are unchanged from the previous version)
+    container: { flex: 1 },
+    scrollContentContainer: { flexGrow: 1, padding: 20 },
+    centerContent: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
+    topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15, paddingHorizontal: 5 },
+    playerInfo: { flex: 1 },
+    gameModeDisplay: { flex: 2, alignItems: 'center', paddingHorizontal: 5 /* Added padding */ },
+    changeModeButton: { marginTop: 2 },
+    gameArea: { flex: 1 },
+    modeSelectionContainer: { alignItems: 'center', width: '100%' },
+    modeSelectionTitle: { marginBottom: 20 },
+    modeGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', width: '100%' },
+    modeItem: { width: modeItemSize, height: modeItemSize * 1.1, borderRadius: 15, marginBottom: 15, overflow: 'hidden', elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 },
+    modeImageBackground: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    modeImage: { borderRadius: 15, opacity: 0.8 },
+    modeOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: 15 },
+    modeText: { color: '#FFFFFF', textAlign: 'center', paddingHorizontal: 5, position: 'relative', zIndex: 1 },
+    errorText: { marginBottom: 10, fontSize: 16 },
+    button: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8, alignItems: 'center' }
 });

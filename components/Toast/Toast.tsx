@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
-import { Animated, StyleSheet, Text, View, Dimensions } from 'react-native';
+import { Animated, StyleSheet, Text, Dimensions } from 'react-native';
 import { useTheme } from '@/constants/useTheme';
 
 interface ToastProps {
   message: string;
-  type?: 'success' | 'error' | 'info';
+  type?: 'success' | 'error' | 'info' | 'warning';
   duration?: number;
   position?: 'top' | 'bottom';
   onHide?: () => void;
@@ -24,11 +24,15 @@ const Toast: React.FC<ToastProps> = ({
   const getBackgroundColor = () => {
     switch (type) {
       case 'success':
-        return isDark ? '#2D5A27' : '#4CAF50';
+        return colors.colors.teal;
       case 'error':
-        return isDark ? '#8B2E2E' : '#F44336';
+        return colors.colors.deepOrange;
+      case 'info':
+        return colors.colors.spaceBlue;
+      case 'warning':
+        return colors.colors.amber;
       default:
-        return isDark ? '#1E293B' : '#64748B';
+        return colors.colors.spaceBlue;
     }
   };
 

@@ -2,14 +2,13 @@ import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Switch, ScrollView } from 'react-native';
 import { TextComponent } from '@/components/TextComponent';
 import { useTheme } from '@/constants/useTheme';
-import { Colors } from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import Container from '@/components/ContainerComponent';
 import TopBarComponent from '@/components/TopBarComponent';
 import { useToast } from '@/components/Toast/useToast';
 
 export default function Settings() {
-    const { colors, isDark, theme } = useTheme();
+    const { colors  } = useTheme();
     const { showToast } = useToast();
     const [notificationsEnabled, setNotificationsEnabled] = useState(true);
     const [notificationTime, setNotificationTime] = useState('09:00');
@@ -58,11 +57,11 @@ export default function Settings() {
         showChevron?: boolean;
     }) => (
         <TouchableOpacity 
-            style={[styles.settingItem, { backgroundColor: colors.cardBackground }]} 
+            style={[styles.settingItem, { backgroundColor: colors.cards.primary }]} 
             onPress={onPress}
         >
             <View style={styles.settingItemLeft}>
-                <Ionicons name={icon as any} size={24} color={colors.text} />
+                <Ionicons name={icon as any} size={24} color={colors.text.primary} />
                 <TextComponent style={styles.settingItemTitle}>{title}</TextComponent>
             </View>
             <View style={styles.settingItemRight}>
@@ -71,11 +70,11 @@ export default function Settings() {
                     <Switch
                         value={notificationsEnabled}
                         onValueChange={handleNotificationToggle}
-                        trackColor={{ false: Colors.indigo.lightest, true: Colors.indigo.default }}
-                        thumbColor={isDark ? Colors.background.light : Colors.background.dark}
+                        trackColor={{ false: colors.colors.indigo, true: colors.colors.indigo }}
+                        thumbColor={colors.background.primary}
                     />
                 )}
-                {showChevron && <Ionicons name="chevron-forward" size={24} color={colors.text} />}
+                {showChevron && <Ionicons name="chevron-forward" size={24} color={colors.text.primary} />}
             </View>
         </TouchableOpacity>
     );
@@ -108,7 +107,7 @@ export default function Settings() {
                     <SettingItem
                         icon="moon-outline"
                         title="Theme"
-                        value={isDark ? "Dark" : "Light"}
+                        value={colors.text.primary}
                         onPress={handleThemeChange}
                     />
                 </View>

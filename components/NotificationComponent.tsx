@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, Animated } from 'react-native';
-import { Colors } from '../constants/Colors';
+import { useTheme } from '@/constants/useTheme';
 import Ionicons from '@expo/vector-icons/Ionicons'; // Import Ionicons
 
 interface NotificationProps {
@@ -10,7 +10,7 @@ interface NotificationProps {
   message: string;
   visible: boolean;
   onClose: () => void;
-  backgroundColor?: keyof typeof Colors;
+  backgroundColor?: 'indigo' | 'amber' | 'teal' | 'spaceBlue' | 'deepOrange';
   autoCloseTimeout?: number; // Optional timeout in milliseconds, default to 5000
 }
 
@@ -22,7 +22,8 @@ const NotificationComponent: React.FC<NotificationProps> = ({
   backgroundColor = 'indigo', // Default to indigo
   autoCloseTimeout = 5000, // Default to 5 seconds
 }) => {
-  const NotificationBackgroundColor = Colors[backgroundColor]?.darker || Colors.indigo.darker; // Fallback
+  const { colors } = useTheme();
+  const NotificationBackgroundColor = colors.colors[backgroundColor as keyof typeof colors.colors] || colors.colors.indigo; // Fallback
   const slideAnim = useRef(new Animated.Value(300)).current; // Initial position off-screen (bottom)
 
   const handleClose = useCallback(() => {

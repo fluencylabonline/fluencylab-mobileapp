@@ -1,9 +1,7 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
-  Text,
   View,
   ActivityIndicator,
-  FlatList,
   StyleSheet,
   useColorScheme,
   TouchableOpacity,
@@ -12,7 +10,6 @@ import {
 import BottomSheet, { BottomSheetFlatList, BottomSheetView } from '@gorhom/bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
 import { TextComponent } from '@/components/TextComponent';
-import { Colors } from '@/constants/Colors';
 import { db } from '@/config/firebase';
 import { collection, getDocs, doc, setDoc, getDoc } from 'firebase/firestore';
 import { useTheme } from '@/constants/useTheme';
@@ -39,7 +36,8 @@ const TestDetailsContent: React.FC<{
   const [testInfo, setTestInfo] = useState<any>(null);
   const [selectedSection, setSelectedSection] = useState<string>('fala');
   const [loading, setLoading] = useState(true);
-
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
   useEffect(() => {
     const fetchTestInfo = async () => {
       try {
@@ -251,7 +249,7 @@ const TestDetailsContent: React.FC<{
       {/* Cabeçalho com botão de voltar */}
       <View style={styles.header}>
         <TouchableOpacity onPress={onBack}>
-          <Ionicons name="arrow-back" size={24} color={Colors.amber.darker} />
+          <Ionicons name="arrow-back" size={24} color={colors.colors.amber} />
         </TouchableOpacity>
         <TextComponent weight="bold" size="large" style={styles.headerTitle}>Detalhes do Teste</TextComponent>
       </View>
@@ -316,9 +314,11 @@ const PlacementComponent: React.FC<PlacementComponentProps> = ({
   const [viewMode, setViewMode] = useState<'list' | 'details'>('list');
 
   const { colors } = useTheme();
+  const styles = getStyles(colors);
+
   const notebookItemStyle = {
     ...styles.testItem,
-    backgroundColor: colors.cardBackgroundSecodary,
+    backgroundColor: colors.cards.secondary,
   };
 
   // Busca informações do usuário (para obter o NivelamentoPermitido)
@@ -416,7 +416,7 @@ const PlacementComponent: React.FC<PlacementComponentProps> = ({
             styles.statusBadge,
             {
               backgroundColor: item.completed
-                ? Colors.teal.default
+                ? colors.colors.teal
                 : isCurrentTest
                 ? 'yellow'
                 : 'red',
@@ -444,22 +444,20 @@ const PlacementComponent: React.FC<PlacementComponentProps> = ({
       onChange={(index) => {
         if (index === -1) onClose?.();
       }}
-      handleIndicatorStyle={{ backgroundColor: Colors.amber.darker, width: 65 }}
+      handleIndicatorStyle={{ backgroundColor: colors.colors.amber, width: 65 }}
       backgroundStyle={{
         ...styles.bottomSheetShadow,
-        backgroundColor: isDark
-          ? Colors.background.darker
-          : Colors.background.lighter,
+        backgroundColor: colors.bottomSheet.background
       }}
     >
       <BottomSheetView style={styles.container}>
         {viewMode === 'list' ? (
           <>
-            <TextComponent weight="bold" size="large" color={isDark ? Colors.amber.default : Colors.amber.default} style={styles.title}> 
+            <TextComponent weight="bold" size="large" color={colors.colors.amber} style={styles.title}> 
               Nivelamento
             </TextComponent>
             {loading ? (
-              <ActivityIndicator size="large" color={Colors.amber.darker} />
+              <ActivityIndicator size="large" color={colors.colors.amber} />
             ) : tests.length > 0 ? (
               <View>
                 <BottomSheetFlatList
@@ -469,7 +467,7 @@ const PlacementComponent: React.FC<PlacementComponentProps> = ({
                   contentContainerStyle={{
                     flexGrow: 1,
                     paddingBottom: 16,
-                    backgroundColor: colors.cardBackgroundBottomSheet,
+                    backgroundColor: colors.background.list,
                   }}
                 />
                 <View style={styles.buttonContainer}>
@@ -530,7 +528,7 @@ const PlacementComponent: React.FC<PlacementComponentProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     padding: 16,
     flex: 1,
@@ -573,10 +571,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   confirmButton: {
-    backgroundColor: 'green',
+    backgroundColor: colors.colors.teal,
   },
   warningButton: {
-    backgroundColor: 'orange',
+    backgroundColor: colors.colors.amber,
   },
   buttonText: {
     color: '#fff',
@@ -603,17 +601,17 @@ const styles = StyleSheet.create({
     padding: 8,
     marginRight: 8,
     marginBottom: 8,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: colors.background.list,
     borderRadius: 4,
   },
   sidebarItemActive: {
-    backgroundColor: Colors.amber.darker,
+    backgroundColor: colors.colors.amber,
   },
   sidebarText: {
-    color: '#374151',
+    color: colors.text.primary,
   },
   sidebarTextActive: {
-    color: '#fff',
+    color: colors.text.secondary,
   },
   detailsContent: {
     flex: 1,
@@ -630,11 +628,11 @@ const styles = StyleSheet.create({
   card: {
     padding: 12,
     borderRadius: 8,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.background.list,
     marginBottom: 8,
   },
   cardText: {
-    color: '#1F2937',
+    color: colors.text.primary,
   },
 });
 

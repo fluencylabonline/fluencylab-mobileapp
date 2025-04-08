@@ -5,9 +5,11 @@ import { auth } from '../config/firebase';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import { ToastProvider } from '@/components/Toast/useToast';
+import { useTheme } from '@/constants/useTheme';
 
 export default function RootLayout() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const { colors } = useTheme();
   const router = useRouter();
   const segments = useSegments();
   useEffect(() => {

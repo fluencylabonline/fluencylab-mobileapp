@@ -14,14 +14,14 @@ import ReviewCard from './ReviewCard';
 import { Ionicons } from '@expo/vector-icons';
 import Loading from '@/components/Animation/Loading';
 import { TextComponent } from '@/components/TextComponent';
-import { Colors } from '@/constants/Colors'; // Fetched via content_fetcher
-import { useTheme } from '@/constants/useTheme'; // Fetched via content_fetcher
+import { useTheme } from '@/constants/useTheme';
 import { useToast } from '@/components/Toast/useToast';
 import TopBarComponent from '@/components/TopBarComponent';
 import Container from '@/components/ContainerComponent';
 import InputComponent from '@/components/InputComponent';
 import ButtonComponent from '@/components/ButtonComponent';
-import BottomSheet, { BottomSheetFlatList, BottomSheetTextInput } from '@gorhom/bottom-sheet'; // Import BottomSheet components
+import BottomSheet, { BottomSheetFlatList, BottomSheetTextInput } from '@gorhom/bottom-sheet';
+import { Colors } from 'react-native/Libraries/NewAppScreen';
 
 // Types
 interface Deck {
@@ -47,7 +47,8 @@ interface FlashcardsProps {
 
 // Main App Component
 const Flashcards: React.FC<FlashcardsProps> = ({ onClose }) => {
- const { colors } = useTheme(); //
+ const { colors } = useTheme();
+ const styles = getStyles(colors);
  const { showToast } = useToast();
  const [currentUser, setCurrentUser] = useState<any>(null);
  const [role, setRole] = useState<string | null>(null);
@@ -415,7 +416,7 @@ const Flashcards: React.FC<FlashcardsProps> = ({ onClose }) => {
         style={styles.deckListItem}
         imageStyle={styles.deckListImage} // Apply borderRadius to image
       >
-        <View style={[styles.overlay, { backgroundColor: colors.cardBackgroundBottomSheet }]}/>
+        <View style={[styles.overlay, { backgroundColor: colors.background.list }]}/>
         <View style={styles.deckListItemContent}>
           <TextComponent weight="bold" size="medium" style={styles.deckListName}>{item.id}</TextComponent>
           <TextComponent weight="regular" size="small" style={styles.cardsToReview}>
@@ -428,12 +429,12 @@ const Flashcards: React.FC<FlashcardsProps> = ({ onClose }) => {
 
  const renderOtherDeckItem = ({ item }: { item: OtherDeck }) => (
     // Wrap with View, not TouchableOpacity, action buttons are inside
-    <View style={[styles.otherDeckItem, { backgroundColor: colors.cardBackgroundSecodary }]}>
+    <View style={[styles.otherDeckItem, { backgroundColor: colors.cards.secondary }]}>
       <View style={styles.otherDeckTextContainer}>
-        <TextComponent weight="bold" size="medium" style={[styles.otherDeckName, { color: colors.text }]}>{item.id}</TextComponent>
+        <TextComponent weight="bold" size="medium" style={[styles.otherDeckName, { color: colors.text.primary }]}>{item.id}</TextComponent>
          {/* Optionally display tags here */}
          {item.tags && (
-            <TextComponent size="small" style={[styles.tagsText, { color: colors.secondaryText }]}>
+            <TextComponent size="small" style={[styles.tagsText, { color: colors.text.secondary }]}>
                 Tags: {item.tags.join(', ')}
             </TextComponent>
           )}
@@ -441,7 +442,7 @@ const Flashcards: React.FC<FlashcardsProps> = ({ onClose }) => {
       <View style={styles.otherDeckActionsContainer}>
           {/* Button to add deck to user's own collection */}
           <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: Colors.teal.default }]} // Use Teal for Add
+            style={[styles.actionButton, { backgroundColor: colors.colors.teal }]} // Use Teal for Add
             onPress={() => handleAddingDeckPress(item.id)}
            >
              <Ionicons name="add" size={20} color="white" />
@@ -451,7 +452,7 @@ const Flashcards: React.FC<FlashcardsProps> = ({ onClose }) => {
           {/* Button to send deck (only for teachers) */}
           {role === 'teacher' && (
             <TouchableOpacity
-              style={[styles.actionButton, { backgroundColor: Colors.indigo.lighter }]} // Use Indigo for Send
+              style={[styles.actionButton, { backgroundColor: colors.colors.indigo }]} // Use Indigo for Send
               onPress={() => openOtherConfirmModal(item.id)}
             >
                 <Ionicons name="person-circle-outline" size={20} color="white" />
@@ -480,8 +481,8 @@ const Flashcards: React.FC<FlashcardsProps> = ({ onClose }) => {
        onRequestClose={() => setModalAddingVisible(false)}
      >
        <View style={styles.modalBackdrop}>
-         <View style={[styles.modalContent, { backgroundColor: colors.cardBackground }]}>
-           <TextComponent weight="regular" size="medium" style={[styles.modalText, { color: colors.text }]}>
+         <View style={[styles.modalContent, { backgroundColor: colors.cards.primary }]}>
+           <TextComponent weight="regular" size="medium" style={[styles.modalText, { color: colors.text.primary }]}>
              Adicionar o deck "{selectedDeck}" aos seus decks?
            </TextComponent>
            <View style={styles.modalButtons}>
@@ -505,15 +506,15 @@ const Flashcards: React.FC<FlashcardsProps> = ({ onClose }) => {
  if(isOtherConfirmModalOpen) {
   return (
        <View style={styles.modalBackdrop}>
-         <View style={[styles.modalContent, { backgroundColor: colors.cardBackgroundBottomSheet }]}>
-           <TextComponent weight="bold" size="medium" style={[styles.modalText, { color: colors.text }]}>
+         <View style={[styles.modalContent, { backgroundColor: colors.cards.primary }]}>
+           <TextComponent weight="bold" size="medium" style={[styles.modalText, { color: colors.text.primary }]}>
              Enviar deck "{selectedDeck}" para:
            </TextComponent>
 
            {/* Student Search Input */}
            <InputComponent
              placeholder="Buscar aluno..."
-             placeholderTextColor={colors.secondaryText}
+             placeholderTextColor={colors.text.secondary}
              value={studentSearchQuery}
              onChangeText={setStudentSearchQuery}
              style={{marginBottom: 10}} // Add some margin
@@ -530,8 +531,8 @@ const Flashcards: React.FC<FlashcardsProps> = ({ onClose }) => {
                  onPress={() => setSelectedStudentId(item.id)}
                  style={[
                     styles.studentItem,
-                    { borderColor: colors.secondaryText }, //
-                    selectedStudentId === item.id ? { backgroundColor: Colors.indigo.lightest } : {} // Highlight selected
+                    { borderColor: colors.text.secondary }, //
+                    selectedStudentId === item.id ? { backgroundColor: colors.colors.indigo } : {} // Highlight selected
                  ]}
                >
                  <TextComponent
@@ -539,7 +540,7 @@ const Flashcards: React.FC<FlashcardsProps> = ({ onClose }) => {
                    size="medium"
                    style={[
                      styles.studentName,
-                     { color: colors.text },
+                     { color: colors.text.primary },
                      // selectedStudentId === item.id && { color: colors.secondaryText } // Change highlight to background instead of text color
                    ]}
                  >
@@ -550,7 +551,7 @@ const Flashcards: React.FC<FlashcardsProps> = ({ onClose }) => {
              keyExtractor={(item) => item.id}
              ListEmptyComponent={() => (
                 <View style={styles.emptyListContainer}>
-                    <TextComponent style={{color: colors.secondaryText}}>Nenhum aluno encontrado.</TextComponent>
+                    <TextComponent style={{color: colors.text.secondary}}>Nenhum aluno encontrado.</TextComponent>
                 </View>
             )}
            />
@@ -577,8 +578,8 @@ const Flashcards: React.FC<FlashcardsProps> = ({ onClose }) => {
    <Container>
      <TopBarComponent
         title={headerName}
-        leftIcon={<Ionicons onPress={handleBack} name="arrow-back" size={28} color={colors.text} />} //
-        rightIcon={<Ionicons onPress={handleOpenBottomSheet} name="flash" size={28} color={colors.text} />} // Changed icon to search
+        leftIcon={<Ionicons onPress={handleBack} name="arrow-back" size={28} color={colors.text.primary} />} //
+        rightIcon={<Ionicons onPress={handleOpenBottomSheet} name="flash" size={28} color={colors.text.primary} />} // Changed icon to search
      />
 
      {/* My Decks List */}
@@ -590,8 +591,8 @@ const Flashcards: React.FC<FlashcardsProps> = ({ onClose }) => {
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={() => (
             <View style={styles.emptyListContainer}>
-                <TextComponent style={{color: colors.secondaryText}}>Nenhum deck pessoal encontrado.</TextComponent>
-                <TextComponent style={{color: colors.secondaryText}}>Toque no ícone de busca para adicionar decks.</TextComponent>
+                <TextComponent style={{color: colors.text.secondary}}>Nenhum deck pessoal encontrado.</TextComponent>
+                <TextComponent style={{color: colors.text.secondary}}>Toque no ícone de busca para adicionar decks.</TextComponent>
             </View>
         )}
      />
@@ -603,16 +604,16 @@ const Flashcards: React.FC<FlashcardsProps> = ({ onClose }) => {
         index={-1} // Start closed
         snapPoints={snapPoints}
         enablePanDownToClose={true}
-        backgroundStyle={{ backgroundColor: colors.cardBackgroundBottomSheet }} //
-        handleIndicatorStyle={{ backgroundColor: colors.secondaryText }} //
+        backgroundStyle={{ backgroundColor: colors.bottomSheet.background }} //
+        handleIndicatorStyle={{ backgroundColor: colors.colors.indigo }} //
         // onChange={handleSheetChanges} // Optional: Handle state changes
       >
         <View style={styles.bottomSheetContentContainer}>
-            <TextComponent weight='bold' size='large' style={[styles.bottomSheetTitle, { color: colors.text }]}>Decks Disponíveis</TextComponent>
+            <TextComponent weight='bold' size='large' style={[styles.bottomSheetTitle, { color: colors.text.primary }]}>Decks Disponíveis</TextComponent>
              {/* Search Input inside BottomSheet */}
             <BottomSheetTextInput
                 placeholder="Buscar por nome ou tag..."
-                placeholderTextColor={colors.secondaryText} //
+                placeholderTextColor={colors.text.secondary} //
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 style={{zIndex: 1000, flex: 1}}
@@ -626,7 +627,7 @@ const Flashcards: React.FC<FlashcardsProps> = ({ onClose }) => {
                 showsVerticalScrollIndicator={false}
                 ListEmptyComponent={() => (
                      <View style={styles.emptyListContainer}>
-                        <TextComponent style={{color: colors.secondaryText}}>Nenhum deck disponível encontrado.</TextComponent>
+                        <TextComponent style={{color: colors.text.secondary}}>Nenhum deck disponível encontrado.</TextComponent>
                      </View>
                 )}
              />
@@ -636,7 +637,7 @@ const Flashcards: React.FC<FlashcardsProps> = ({ onClose }) => {
  );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
  listContainer: {
    paddingHorizontal: 16,
    paddingTop: 10,

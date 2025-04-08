@@ -19,7 +19,6 @@ import InputComponent from '@/components/InputComponent'; // Adjust path
 import ButtonComponent from '@/components/ButtonComponent'; // Adjust path
 import { useTheme } from '@/constants/useTheme'; // Adjust path
 import { useToast } from '@/components/Toast/useToast'; // Adjust path
-import { Colors } from '@/constants/Colors'; // Adjust path
 
 // Speech Recognition Library
 import Voice, { SpeechResultsEvent, SpeechErrorEvent } from '@react-native-voice/voice';
@@ -42,7 +41,9 @@ interface NivelamentoDocument {
 }
 
 export default function SpeakingScreen({ onClose }: { onClose: () => void }) { // Renamed component for clarity
-    const { colors, isDark } = useTheme();
+    const { colors } = useTheme();
+    const styles = getStyles(colors);
+
     const { showToast } = useToast();
     const route = useRoute<SpeakingScreenRouteProp>(); // Get route params
 
@@ -321,13 +322,13 @@ export default function SpeakingScreen({ onClose }: { onClose: () => void }) { /
             <TouchableOpacity
                 style={[
                     styles.listItem,
-                    { backgroundColor: isSelected ? Colors.amber.default : colors.cardBackground },
+                    { backgroundColor: isSelected ? colors.colors.amber : colors.cards.primary },
                 ]}
                 onPress={() => handlePlayAudio(item)}
             >
                 <Text style={[
                     styles.listText,
-                    { color: isSelected ? Colors.black.darkest : colors.text } ,
+                    { color: isSelected ? colors.text.primary : colors.text.secondary } ,
                     isSelected && styles.listTextSelected // Apply bold font weight if selected
                 ]}
                 >
@@ -339,13 +340,13 @@ export default function SpeakingScreen({ onClose }: { onClose: () => void }) { /
 
     // --- Render ---
     if (isLoading) {
-        return <View style={styles.centered}><ActivityIndicator size="large" color={Colors.amber.default} /></View>;
+        return <View style={styles.centered}><ActivityIndicator size="large" color={colors.colors.amber} /></View>;
     }
 
     return (
-        <View style={[styles.container, { backgroundColor: isDark ? Colors.background.darkMode : Colors.background.lightMode }]}>
+        <View style={[styles.container, { backgroundColor: colors.background.primary }]}>
             {/* Left Column: Search and List */}
-            <View style={[styles.listContainer, { backgroundColor: colors.cardBackground }]}>
+            <View style={[styles.listContainer, { backgroundColor: colors.cards.primary }]}>
                 <InputComponent
                     placeholder='Procure aqui...'
                     value={searchQuery}
@@ -355,7 +356,7 @@ export default function SpeakingScreen({ onClose }: { onClose: () => void }) { /
                 />
                 {filteredData.length === 0 && !isLoading ? (
                      <View style={styles.centered}>
-                         <Text style={[styles.infoText, { color: colors.text }]}>Nenhum áudio encontrado.</Text>
+                         <Text style={[styles.infoText, { color: colors.text.secondary }]}>Nenhum áudio encontrado.</Text>
                      </View>
                  ) : (
                     <FlatList
@@ -372,20 +373,20 @@ export default function SpeakingScreen({ onClose }: { onClose: () => void }) { /
             {selectedAudio ? (
                 <View style={styles.detailsContainer}>
                     {/* Instructions */}
-                    <View style={[styles.card, { backgroundColor: colors.cardBackground }]}>
-                        <Text style={[styles.cardTitle, { color: colors.text }]}>Instruções:</Text>
-                        <Text style={[styles.cardText, { color: colors.secondaryText }]}>
+                    <View style={[styles.card, { backgroundColor: colors.cards.primary }]}>
+                        <Text style={[styles.cardTitle, { color: colors.text.primary }]}>Instruções:</Text>
+                        <Text style={[styles.cardText, { color: colors.text.secondary }]}>
                             Quando estiver pronto, aperte o botão <Text style={styles.bold}>Falar</Text> e leia o texto abaixo em voz alta. Quando terminar, clique em <Text style={styles.bold}>Parar</Text> e veja sua pontuação.
                         </Text>
-                        <Text style={[styles.warningText, { color: Colors.amber.darker }]}>
+                        <Text style={[styles.warningText, { color: colors.colors.amber }]}>
                             Este recurso está em fase de testes. Talvez precise tentar mais de uma vez para ter uma pontuação realista.
                         </Text>
                     </View>
 
                     {/* Transcript and Record Button */}
-                    <View style={[styles.card, { backgroundColor: colors.cardBackground }]}>
-                        <Text style={[styles.cardTitle, { color: colors.text }]}>{selectedAudio.name}</Text>
-                        <Text style={[styles.transcriptText, { color: colors.secondaryText }]}>{selectedAudio.transcript}</Text>
+                    <View style={[styles.card, { backgroundColor: colors.cards.primary }]}>
+                        <Text style={[styles.cardTitle, { color: colors.text.primary }]}>{selectedAudio.name}</Text>
+                        <Text style={[styles.transcriptText, { color: colors.text.secondary }]}>{selectedAudio.transcript}</Text>
                         <ButtonComponent
                             title={isRecording ? 'Parar' : 'Falar'}
                             // Map variants to your ButtonComponent color props
@@ -394,15 +395,15 @@ export default function SpeakingScreen({ onClose }: { onClose: () => void }) { /
                             style={styles.recordButton}
                             iconName={isRecording ? "mic-off-outline" : "mic-outline"} // Example icons
                         />
-                         {isRecording && <ActivityIndicator style={styles.recordingIndicator} size="small" color={Colors.deepOrange.default} />}
+                         {isRecording && <ActivityIndicator style={styles.recordingIndicator} size="small" color={colors.colors.deepOrange} />}
                     </View>
 
                     {/* Spoken Text and Score */}
-                    <View style={[styles.card, { backgroundColor: colors.cardBackground }]}>
-                        <Text style={[styles.cardTitle, { color: colors.text }]}>Texto Falado:</Text>
-                        <Text style={[styles.spokenText, { color: colors.secondaryText }]}>{spokenText || (isRecording ? 'Ouvindo...' : 'Nenhuma fala detectada.')}</Text>
+                    <View style={[styles.card, { backgroundColor: colors.cards.primary }]}>
+                        <Text style={[styles.cardTitle, { color: colors.text.primary }]}>Texto Falado:</Text>
+                        <Text style={[styles.spokenText, { color: colors.text.secondary }]}>{spokenText || (isRecording ? 'Ouvindo...' : 'Nenhuma fala detectada.')}</Text>
                         {score !== null && (
-                             <Text style={[styles.scoreText, { color: colors.text }]}>
+                             <Text style={[styles.scoreText, { color: colors.text.primary }]}>
                                 Pontuação: <Text style={styles.bold}>{score}%</Text>
                             </Text>
                         )}
@@ -410,7 +411,7 @@ export default function SpeakingScreen({ onClose }: { onClose: () => void }) { /
                 </View>
             ) : (
                  <View style={[styles.detailsContainer, styles.centered]}>
-                      <Text style={[styles.infoText, { color: colors.text }]}>Selecione um áudio da lista.</Text>
+                      <Text style={[styles.infoText, { color: colors.text.secondary }]}>Selecione um áudio da lista.</Text>
                   </View>
              )}
         </View>
@@ -418,7 +419,7 @@ export default function SpeakingScreen({ onClose }: { onClose: () => void }) { /
 }
 
 // --- Styles ---
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
     container: {
         flex: 1,
         flexDirection: 'row', // Arrange list and details side-by-side
@@ -451,7 +452,7 @@ const styles = StyleSheet.create({
         borderRadius: 6,
         marginVertical: 4, // Add vertical spacing between items
         borderWidth: 1,
-        borderColor: Colors.black.lighter, // Subtle border
+        borderColor: colors.colors.amber, // Subtle border
     },
     listText: {
         fontSize: 15,

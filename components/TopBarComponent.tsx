@@ -1,7 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '@/constants/Colors';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { TextComponent } from './TextComponent';
 import { useTheme } from '@/constants/useTheme';
 interface TopBarProps {
@@ -19,11 +17,9 @@ const TopBarComponent: React.FC<TopBarProps> = ({
   rightIcon,
   onRightPress,
 }) => {
-  const colorScheme = useColorScheme();
-  const isDarkMode = colorScheme === 'dark';
-  const backgroundColor = isDarkMode ? Colors.background.darkMode : Colors.background.lightMode;
-  const textColor = isDarkMode ? Colors.text.darker : Colors.text.lighter;
-  const colors = useTheme();
+  const { colors } = useTheme();
+  const backgroundColor = colors.background.primary;
+  const textColor = colors.text.primary;
 
   return (
     <View style={[styles.container, { backgroundColor }]}>      

@@ -1,4 +1,3 @@
-// src/components/Player/Player.tsx
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Platform } from 'react-native'; // Added Platform
 import { Audio, AVPlaybackStatus, InterruptionModeIOS, InterruptionModeAndroid } from 'expo-av';
@@ -6,13 +5,11 @@ import Slider from '@react-native-community/slider';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/constants/useTheme';
 import { TextComponent } from '../TextComponent';
-import { Colors } from '@/constants/Colors';
 
 interface AudioPlayerProps {
     sourceUrl: string | null;
     playbackRate?: number;
-    minimal?: boolean; // --- NEW PROP ---
-    // Add other potential props like onEnd, onProgress if needed later
+    minimal?: boolean;
 }
 
 // Helper function to format time from milliseconds to MM:SS
@@ -41,8 +38,8 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     const [positionMillis, setPositionMillis] = useState<number>(0);
     const [isSeeking, setIsSeeking] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const { colors, isDark } = useTheme();
-
+    const { colors } = useTheme();
+    const styles = getStyles(colors);
     // --- Audio Mode Configuration (Keep as is) ---
     useEffect(() => {
         // Configure audio session - important for background play, interruptions
@@ -404,9 +401,9 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
                 minimumValue={0}
                 maximumValue={durationMillis ?? 1} // Use 1 as max if duration unknown
                 value={positionMillis}
-                minimumTrackTintColor={Colors.spaceBlue.default} // Use theme primary
-                maximumTrackTintColor={Colors.spaceBlue.default} // Use theme border or secondary text
-                thumbTintColor={Colors.spaceBlue.darker} // Use theme primary dark
+                minimumTrackTintColor={colors.colors.spaceBlue} // Use theme primary
+                maximumTrackTintColor={colors.colors.spaceBlue} // Use theme border or secondary text
+                thumbTintColor={colors.colors.spaceBlue} // Use theme primary dark
                 onSlidingStart={handleSeekStart}
                 onSlidingComplete={handleSeekComplete}
                  // Disable slider if duration is unknown OR if it's initially loading
@@ -425,22 +422,22 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
             {/* Add justifyContent center for minimal mode */}
             <View style={[styles.controlsContainer, minimal && styles.minimalControlsContainer]}>
                 <TouchableOpacity
-                    style={[styles.playPauseButton, { backgroundColor: colors.cardBackground }]} // Use theme background
+                    style={[styles.playPauseButton, { backgroundColor: colors.cards.primary }]} // Use theme background
                     onPress={handlePlayPause}
                     // Disable button if sound isn't ready (no ref or initial loading) OR if there's an error?
                     disabled={!soundRef.current || (isLoading && !isPlaying && positionMillis === 0)}
                 >
                     {/* Show loader only during initial load/buffer and not playing */}
                     {isLoading && !isPlaying && positionMillis === 0 ? (
-                        <ActivityIndicator size="small" color={Colors.spaceBlue.default} />
+                        <ActivityIndicator size="small" color={colors.colors.spaceBlue} />
                     ) : (
                         <Ionicons
                             name={isPlaying ? 'pause' : 'play'}
                             size={minimal ? 24 : 28} // Smaller icon in minimal mode
                             // Dim icon if disabled
                             color={!soundRef.current || (isLoading && !isPlaying && positionMillis === 0)
-                                ? colors.secondaryText // Use theme disabled color
-                                : Colors.spaceBlue.default // Use theme primary color
+                                ? colors.text.secondary // Use theme disabled color
+                                : colors.colors.spaceBlue // Use theme primary color
                             }
                         />
                     )}
@@ -451,7 +448,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
 };
 
 // --- Styles ---
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
     playerContainer: {
         paddingVertical: 5, // Reduced vertical padding
         alignItems: 'center',
@@ -485,7 +482,7 @@ const styles = StyleSheet.create({
         marginBottom: 5, // Reduced margin
         fontSize: 12,
         textAlign: 'center',
-        color: Colors.amber.default, // Use theme error color
+        color: colors.colors.amber, // Use theme error color
         paddingHorizontal: 10, // Add padding
     },
     slider: {

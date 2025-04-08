@@ -1,20 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { 
   View, 
-  Text, 
   TouchableOpacity, 
   FlatList, 
   Modal, 
   StyleSheet, 
-  Linking, 
-  useColorScheme
+  Linking
 } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import { getStorage, ref, uploadBytes, listAll, getDownloadURL, deleteObject } from 'firebase/storage';
 import { Ionicons } from '@expo/vector-icons';
 import { TextComponent } from '../TextComponent';
 import ButtonComponent from '../ButtonComponent';
-import { Colors } from '@/constants/Colors';
+import { useTheme } from '@/constants/useTheme';
 
 interface Material {
   name: string;
@@ -30,14 +28,13 @@ const MaterialsComponent: React.FC<MaterialsComponentProps> = ({ studentID }) =>
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [fileToDelete, setFileToDelete] = useState('');
   const storage = getStorage();
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
 
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-  
   const cardStyle = {
     ...styles.modalContent,
-    backgroundColor: isDark ? Colors.background.dark : Colors.background.light,
-    shadowColor: isDark ? "#000" : "#666",
+    backgroundColor: colors.background.primary,
+    shadowColor: colors.colors.indigo,
   };
 
   useEffect(() => {
@@ -183,7 +180,7 @@ const MaterialsComponent: React.FC<MaterialsComponentProps> = ({ studentID }) =>
 
 export default MaterialsComponent;
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     borderRadius: 8,
     marginVertical: 10,
@@ -239,17 +236,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
   },
   modalButtonDanger: {
-    backgroundColor: '#dc3545',
+    backgroundColor: colors.colors.amber,
     padding: 10,
     borderRadius: 8,
   },
   modalButton: {
-    backgroundColor: '#6c757d',
+    backgroundColor: colors.colors.indigo,
     padding: 10,
     borderRadius: 8,
   },
   modalButtonText: {
-    color: '#fff',
+    color: colors.text.secondary,
     fontSize: 14,
     fontWeight: 'bold',
   },

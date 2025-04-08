@@ -1,13 +1,11 @@
-import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import {
   View,
-  Text,
   FlatList,
   TouchableOpacity,
   StyleSheet,
   TextInput,
   RefreshControl,
-  useColorScheme,
 } from 'react-native';
 import { collection, doc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/config/firebase';
@@ -21,7 +19,6 @@ import { Ionicons } from '@expo/vector-icons';
 import Loading from '@/components/Animation/Loading';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { useToast } from '@/components/Toast/useToast';
-import { Colors } from '@/constants/Colors';
 import ButtonComponent from '@/components/ButtonComponent';
 
 interface Notebook {
@@ -42,8 +39,8 @@ const Aulas: React.FC = () => {
   const [filteredNotebooks, setFilteredNotebooks] = useState<Notebook[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const { colors } = useTheme();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const styles = getStyles(colors);
+
   const [loading, setLoading] = useState(true);
   
   // State for report bottom sheet
@@ -100,7 +97,7 @@ const Aulas: React.FC = () => {
 
   const notebookItemStyle = {
     ...styles.notebookItem,
-    backgroundColor: colors.cardBackground,
+    backgroundColor: colors.cards.primary,
   };
 
   // Open the bottom sheet and set the active notebook id, preserving saved report if it exists
@@ -146,7 +143,7 @@ const Aulas: React.FC = () => {
         title="Aulas"
         leftIcon={
           <TouchableOpacity onPress={router.back}>
-            <Ionicons name="arrow-back-sharp" size={26} color={colors.text} />
+            <Ionicons name="arrow-back-sharp" size={26} color={colors.text.primary} />
           </TouchableOpacity>
         }
       />
@@ -180,14 +177,14 @@ const Aulas: React.FC = () => {
                   <TextComponent
                     weight="regular"
                     size="small"
-                    style={[{ color: colors.secondaryText }]}
+                    style={[{ color: colors.text.secondary }]}
                   >
                     {item.title}
                   </TextComponent>
                   <TextComponent
                     weight="bold"
                     size="medium"
-                    style={[{ color: colors.text }]}
+                    style={[{ color: colors.text.secondary }]}
                   >
                     {item.description}
                   </TextComponent>
@@ -197,7 +194,7 @@ const Aulas: React.FC = () => {
               <TouchableOpacity
                 onPress={() => handleOpenReportSheet(item.id)}
               >
-                <Ionicons name="document-text-outline" size={24} color={colors.text} />
+                <Ionicons name="document-text-outline" size={24} color={colors.text.primary} />
               </TouchableOpacity>
             </View>
           )}
@@ -214,18 +211,16 @@ const Aulas: React.FC = () => {
         index={-1}
         snapPoints={snapPoints}
         enablePanDownToClose={true}
-        handleIndicatorStyle={{ backgroundColor: Colors.indigo.default, width: 70, height: 5, borderRadius: 2.5 }}
+        handleIndicatorStyle={{ backgroundColor: colors.colors.indigo, width: 70, height: 5, borderRadius: 2.5 }}
         backgroundStyle={{
             ...styles.bottomSheetShadow,
-            backgroundColor: isDark ? Colors.background.darker : Colors.background.lighter,
+            backgroundColor: colors.bottomSheet.background,
         }}
       >
-        <BottomSheetView style={[styles.sheetContainer, { backgroundColor: colors.cardBackgroundBottomSheet }]}>
-          <TextComponent weight="bold" size="large" color={isDark ? Colors.indigo.default : Colors.indigo.default} style={styles.sheetTitle}>Criar Relatório de Aula</TextComponent>
-          <TextInput
-            style={[styles.input, { color: colors.text, backgroundColor: colors.cardBackground }]}
+        <BottomSheetView style={[styles.sheetContainer, { backgroundColor: colors.bottomSheet.background }]}>
+          <TextComponent weight="bold" size="large" color={colors.colors.indigo} style={styles.sheetTitle}>Criar Relatório de Aula</TextComponent>
+          <InputComponent
             placeholder="Digite o relatório..."
-            placeholderTextColor={colors.secondaryText}
             value={reportContent}
             onChangeText={setReportContent}
             multiline
@@ -240,7 +235,7 @@ const Aulas: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
    bottomSheetShadow: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
@@ -287,7 +282,7 @@ const styles = StyleSheet.create({
   saveButton: {
     paddingHorizontal: 16,
     paddingVertical: 10,
-    backgroundColor: '#007bff',
+    backgroundColor: colors.colors.indigo,
     borderRadius: 8,
   },
 });

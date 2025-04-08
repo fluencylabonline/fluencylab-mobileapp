@@ -44,12 +44,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/constants/useTheme";
 import InputComponent from "@/components/InputComponent";
 import ButtonComponent from "@/components/ButtonComponent";
-import { Colors } from "@/constants/Colors";
 
-import Constants from "expo-constants";
-
-const modelName = Constants.expoConfig?.extra?.modelName as string;
-const geminiApiKey = Constants.expoConfig?.extra?.geminiApiKey as string; 
+const geminiApiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY as string;
+const modelName = process.env.EXPO_PUBLIC_GEMINI_MODEL_NAME as string;
 
 
 interface TicTacToeProps {
@@ -73,7 +70,8 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ onClose }) => {
   const [loading, setLoading] = useState(false); // Loading state for AI check
   const [playerXName, setPlayerXName] = useState<string>("");
   const [playerOName, setPlayerOName] = useState<string>("");
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
   const { showToast } = useToast();
 
   const sentenceSheetRef = useRef<BottomSheet>(null);
@@ -575,7 +573,7 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ onClose }) => {
         style={[
           styles.square,
           isDisabled ? styles.squareDisabled : null,
-          { backgroundColor: colors.cardBackground },
+          { backgroundColor: colors.cards.primary },
         ]}
         disabled={isDisabled || !isMyTurn} // Disable if filled, game over, not started, or not my turn
         onPress={() => {
@@ -636,14 +634,14 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ onClose }) => {
             onPress={handleBack}
             name="arrow-back"
             size={28}
-            color={colors.text}
+            color={colors.text.primary}
           />
         }
         rightIcon={
           <Ionicons
             name="information-circle-outline"
             size={24}
-            color={colors.text}
+            color={colors.text.primary}
             onPress={openInstructionsSheet}
           />
         }
@@ -652,7 +650,7 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ onClose }) => {
         <TextComponent
           weight="bold"
           size="xLarge"
-          style={[styles.statusText, { color: colors.text }]}
+          style={[styles.statusText, { color: colors.text.primary }]}
         >
           {getStatusText()}
         </TextComponent>
@@ -692,7 +690,7 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ onClose }) => {
           <View>
             {/* Game Board */}
             <View
-              style={[styles.board, { backgroundColor: colors.cardBackground }]}
+              style={[styles.board, { backgroundColor: colors.cards.primary }]}
             >
               {board.map((_, index) => renderSquare(index))}
             </View>
@@ -725,22 +723,20 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ onClose }) => {
           enablePanDownToClose={true}
           backdropComponent={renderBackdrop}
           handleIndicatorStyle={{
-            backgroundColor: Colors.teal.darker,
+            backgroundColor: colors.colors.teal,
             width: 65,
           }}
           backgroundStyle={{
-            backgroundColor: isDark
-              ? Colors.background.darker
-              : Colors.background.lighter,
+            backgroundColor: colors.background.primary,
           }}
         >
           <BottomSheetView style={styles.bottomSheetContentContainer}>
-            <TextComponent style={[styles.modalTitle, { color: colors.text }]}>
+            <TextComponent style={[styles.modalTitle, { color: colors.text.primary }]}>
               Escreva uma frase com:{" "}
               <TextComponent
                 weight="bold"
                 size="large"
-                style={{ color: colors.text }}
+                style={{ color: colors.text.primary }}
               >
                 {randomVerb}
               </TextComponent>
@@ -766,7 +762,7 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ onClose }) => {
                     <TextComponent
                       weight="bold"
                       size="medium"
-                      color={colors.text}
+                      color={colors.text.primary}
                     >
                       Checar
                     </TextComponent>
@@ -789,13 +785,11 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ onClose }) => {
           backdropComponent={renderBackdrop}
           // Apply theme background
           handleIndicatorStyle={{
-            backgroundColor: Colors.teal.darker,
+            backgroundColor: colors.colors.teal,
             width: 65,
           }}
           backgroundStyle={{
-            backgroundColor: isDark
-              ? Colors.background.darker
-              : Colors.background.lighter,
+            backgroundColor: colors.background.primary,
           }}
         >
           {/* Use BottomSheetScrollView for scrollable content */}
@@ -805,47 +799,47 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ onClose }) => {
             <TextComponent
               weight="bold"
               size="large"
-              style={[styles.modalTitle, { color: colors.text }]}
+              style={[styles.modalTitle, { color: colors.text.primary }]}
             >
               Instruções
             </TextComponent>
             <TextComponent
               weight="bold"
               size="medium"
-              style={[{ color: colors.text }]}
+              style={[{ color: colors.text.primary }]}
             >
               Como Jogar:
             </TextComponent>
-            <TextComponent style={[{ color: colors.text }]}>
+            <TextComponent style={[{ color: colors.text.primary }]}>
               1. <TextComponent weight="bold">Criar Jogo:</TextComponent> Clique
               em "Criar Jogo". O ID será copiado. Compartilhe com seu amigo.
             </TextComponent>
-            <TextComponent style={[{ color: colors.text }]}>
+            <TextComponent style={[{ color: colors.text.primary }]}>
               2. <TextComponent weight="bold">Entrar Jogo:</TextComponent> Cole
               o ID recebido no campo e clique "Entrar no Jogo".
             </TextComponent>
-            <TextComponent style={[{ color: colors.text }]}>
+            <TextComponent style={[{ color: colors.text.primary }]}>
               3. <TextComponent weight="bold">Jogar:</TextComponent> Quando for
               sua vez, clique em um quadrado vazio.
             </TextComponent>
-            <TextComponent style={[{ color: colors.text }]}>
+            <TextComponent style={[{ color: colors.text.primary }]}>
               4. <TextComponent weight="bold">Frase:</TextComponent> Uma janela
               aparecerá. Escreva uma frase *em inglês* usando o verbo indicado.
             </TextComponent>
-            <TextComponent style={[{ color: colors.text }]}>
+            <TextComponent style={[{ color: colors.text.primary }]}>
               5. <TextComponent weight="bold">Checar:</TextComponent> Clique
               "Checar". Se a frase estiver correta (gramática e verbo), sua
               marca ('X' ou 'O') aparecerá. Se incorreta, tente de novo.
             </TextComponent>
-            <TextComponent style={[{ color: colors.text }]}>
+            <TextComponent style={[{ color: colors.text.primary }]}>
               6. <TextComponent weight="bold">Ganhar:</TextComponent> Faça uma
               linha de 3 (horizontal, vertical ou diagonal).
             </TextComponent>
-            <TextComponent style={[{ color: colors.text }]}>
+            <TextComponent style={[{ color: colors.text.primary }]}>
               7. <TextComponent weight="bold">Empate:</TextComponent> Se todos
               os quadrados forem preenchidos sem um vencedor.
             </TextComponent>
-            <TextComponent style={[{ color: colors.text }]}>
+            <TextComponent style={[{ color: colors.text.primary }]}>
               8. <TextComponent weight="bold">Sair:</TextComponent> Clique "Sair
               do Jogo" para terminar a partida atual.
             </TextComponent>
@@ -859,7 +853,7 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ onClose }) => {
 };
 
 // --- Styles ---
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flexGrow: 1, // Allows scrolling if content exceeds screen height
     alignItems: "center",
@@ -870,7 +864,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   infoButton: {
-    backgroundColor: "#007bff",
+    backgroundColor: colors.colors.indigo,
     borderRadius: 15,
     width: 30,
     height: 30,
@@ -878,7 +872,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   infoButtonText: {
-    color: "#ffffff",
+    color: colors.text.primary,
     fontSize: 16,
     fontWeight: "bold",
   },
@@ -899,12 +893,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   squareDisabled: {
-    backgroundColor: "#f8f8f8", // Slightly different background for disabled squares
+    backgroundColor: colors.background.list, // Slightly different background for disabled squares
   },
   squareText: {
     fontSize: 40, // Large X and O
     fontWeight: "bold",
-    color: "#333",
+    color: colors.text.primary,
   },
   controlsContainer: {
     marginTop: 20,
@@ -925,8 +919,8 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     paddingHorizontal: 15,
     marginBottom: 10,
-    backgroundColor: "#fff",
-    color: "#333", // Text color inside input
+    backgroundColor: colors.background.list,
+    color: colors.text.primary, // Text color inside input
     fontSize: 16,
   },
   buttonRow: {

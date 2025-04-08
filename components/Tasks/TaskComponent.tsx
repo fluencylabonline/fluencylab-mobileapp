@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, TextInput, TouchableOpacity, StyleSheet, useColorScheme } from 'react-native';
-import BottomSheet, { BottomSheetFlatList, BottomSheetTextInput } from '@gorhom/bottom-sheet';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
-// Import onSnapshot
-import { doc, updateDoc, arrayUnion, onSnapshot } from 'firebase/firestore'; // <--- Import onSnapshot, removed getDoc
+import { doc, updateDoc, arrayUnion, onSnapshot } from 'firebase/firestore'; 
 import { db } from '@/config/firebase';
 import { useToast } from '@/components/Toast/useToast';
-import { Colors } from '@/constants/Colors';
+import { useTheme } from '@/constants/useTheme';
 import { TextComponent } from '@/components/TextComponent';
 import InputComponent from '@/components/InputComponent';
+
 interface TasksComponentProps {
   studentID: string;
   onClose: () => void;
@@ -19,8 +19,8 @@ const TasksComponent: React.FC<TasksComponentProps> = ({ studentID, onClose }) =
   const { showToast } = useToast();
   const [tasks, setTasks] = useState<{ [day: string]: any[] }>({});
   const [newTask, setNewTask] = useState('');
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
 
   // Get today's day with first letter capitalized
   const today = new Date();
@@ -148,24 +148,23 @@ const TasksComponent: React.FC<TasksComponentProps> = ({ studentID, onClose }) =
         if (index === -1) onClose();
       }}
       enablePanDownToClose={true}
-      handleIndicatorStyle={{ backgroundColor: Colors.teal.default, width: 70, height: 5, borderRadius: 2.5 }}
+      handleIndicatorStyle={{ backgroundColor: colors.colors.teal, width: 70, height: 5, borderRadius: 2.5 }}
       backgroundStyle={{
         ...styles.bottomSheetShadow,
-        backgroundColor: isDark ? Colors.background.darker : Colors.background.lighter,
+        backgroundColor: colors.bottomSheet.background
       }}
     >
-      <TextComponent weight="bold" size="large" color={Colors.teal.default} style={styles.dayTitle}>
+      <TextComponent weight="bold" size="large" color={colors.colors.teal} style={styles.dayTitle}>
         Tarefas
       </TextComponent>
 
       {/* Add Task Input */}
       <InputComponent
         placeholder="Nova tarefa..."
-        placeholderTextColor={isDark ? Colors.text.secondaryDark : Colors.text.secondaryLight}
         value={newTask}
         onChangeText={setNewTask}
         onSubmitEditing={handleAddTask}
-        button={<Ionicons onPress={handleAddTask} name="add" size={28} color={Colors.teal.default} />}
+        button={<Ionicons onPress={handleAddTask} name="add" size={28} color={colors.colors.teal} />}
       />
 
       {/* Task List */}
@@ -189,7 +188,7 @@ const TasksComponent: React.FC<TasksComponentProps> = ({ studentID, onClose }) =
                     weight="regular"
                     style={[
                       styles.taskText,
-                      { color: isDark ? Colors.text.darker : Colors.text.lighter },
+                      { color: colors.text.primary },
                       task.done && styles.taskTextDone,
                     ]}
                   >
@@ -197,7 +196,7 @@ const TasksComponent: React.FC<TasksComponentProps> = ({ studentID, onClose }) =
                   </TextComponent>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => handleDeleteTask(day, index)} style={styles.deleteButton}>
-                  <Ionicons name="trash-outline" size={22} color={Colors.deepOrange.default} />
+                  <Ionicons name="trash-outline" size={22} color={colors.colors.deepOrange} />
                 </TouchableOpacity>
               </View>
             ))}
@@ -209,7 +208,7 @@ const TasksComponent: React.FC<TasksComponentProps> = ({ studentID, onClose }) =
         ListEmptyComponent={
             <View style={styles.emptyListContainer}>
                 {/* Ensure this TextComponent is the ONLY child or other children are non-text */}
-                <TextComponent style={{ color: isDark ? Colors.text.secondaryDark : Colors.text.secondaryLight, textAlign: 'center' }}>
+                <TextComponent style={{ color: colors.text.secondary, textAlign: 'center' }}>
                    Nenhuma tarefa encontrada. Adicione uma acima!
                 </TextComponent>
             </View>
@@ -221,7 +220,7 @@ const TasksComponent: React.FC<TasksComponentProps> = ({ studentID, onClose }) =
 
 
 // Add/Update styles for better look and feel
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({  
   bottomSheetShadow: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -5 }, // Shadow points upwards
@@ -286,7 +285,7 @@ const styles = StyleSheet.create({
   },
   taskTextDone: {
     textDecorationLine: 'line-through',
-    color: Colors.teal.default, // Use teal for done text
+    color: colors.colors.teal, // Use teal for done text
     opacity: 0.7, // Make done text slightly faded
   },
   checkBox: {
@@ -294,14 +293,14 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 5,
     borderWidth: 2,
-    borderColor: Colors.teal.lightest, // Use a theme color for border
+    borderColor: colors.colors.teal, // Use a theme color for border
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'transparent',
   },
   checkBoxDone: {
-    backgroundColor: Colors.teal.default,
-    borderColor: Colors.teal.default,
+    backgroundColor: colors.colors.teal,
+    borderColor: colors.colors.teal,
   },
   checkMark: { // Style for the checkmark text inside the box (removed in favor of Icon)
     // fontSize: 14,

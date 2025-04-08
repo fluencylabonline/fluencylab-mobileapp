@@ -5,7 +5,6 @@ import React, { useState, useEffect, useRef, memo } from 'react';
 import { View, StyleSheet } from 'react-native';
 // Adjust import paths for your project structure
 import { TextComponent } from '@/components/TextComponent';
-import { Colors } from '@/constants/Colors';
 import { useTheme } from '@/constants/useTheme';
 
 interface QuizTimerProps {
@@ -21,7 +20,8 @@ const QuizTimer: React.FC<QuizTimerProps> = ({
     onFinish,
     resetKey, // Use this key to reset the timer when the question changes
 }) => {
-    const { colors, isDark } = useTheme();
+    const { colors } = useTheme();
+    const styles = getStyles(colors);
     const [timeLeft, setTimeLeft] = useState(duration);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const onFinishRef = useRef(onFinish); // Use ref for the callback
@@ -83,18 +83,18 @@ const QuizTimer: React.FC<QuizTimerProps> = ({
 
     return (
         <View style={styles.timerContainer}>
-            <View style={[styles.timerBarContainer, { backgroundColor: isDark ? Colors.black.darker : Colors.black.lighter }]}>
+            <View style={[styles.timerBarContainer, { backgroundColor: colors.background.list }]}>
                 {/* Ensure progress is between 0 and 100 */}
                 <View style={[styles.timerBar, { width: `${Math.min(100, Math.max(0, progress))}%` }]} />
             </View>
-            <TextComponent style={[styles.timerText, { color: colors.secondaryText }]}>
+            <TextComponent style={[styles.timerText, { color: colors.text.secondary }]}>
                 {displayTime}s
             </TextComponent>
         </View>
     );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
     timerContainer: {
         width: '100%',
         alignItems: 'center',
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
      },
      timerBar: {
          height: '100%',
-         backgroundColor: Colors.teal.default, // Use a distinct color for progress
+         backgroundColor: colors.colors.teal, // Use a distinct color for progress
          borderRadius: 4,
      },
      timerText: {

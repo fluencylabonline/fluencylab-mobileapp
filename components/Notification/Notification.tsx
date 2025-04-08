@@ -7,8 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { db, auth } from '@/config/firebase';
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
-import { Colors } from '@/constants/Colors';
-
+import { useTheme } from '@/constants/useTheme';
   type Notification = {
     id: string;
     content?: string;
@@ -31,6 +30,8 @@ import { Colors } from '@/constants/Colors';
 const BottomSheetNotification: React.FC<BottomSheetNotificationProps> = ({ visible, onUpdateNotificationCount }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -100,7 +101,7 @@ const BottomSheetNotification: React.FC<BottomSheetNotificationProps> = ({ visib
       enablePanDownToClose
       backgroundStyle={styles.bottomSheetBackground}
       handleIndicatorStyle={{
-        backgroundColor: Colors.indigo.default,
+        backgroundColor: colors.colors.indigo,
         width: 70,
         height: 5,
         borderRadius: 2.5,
@@ -117,11 +118,11 @@ const BottomSheetNotification: React.FC<BottomSheetNotificationProps> = ({ visib
               {
                 backgroundColor:
                   item.status?.notice
-                    ? Colors.amber.default
+                    ? colors.colors.amber
                     : item.status?.information
-                    ? Colors.indigo.default
+                    ? colors.colors.indigo
                     : item.status?.tip
-                    ? Colors.teal.default
+                    ? colors.colors.teal
                     : 'white',
               },
             ]}
@@ -148,16 +149,16 @@ const BottomSheetNotification: React.FC<BottomSheetNotificationProps> = ({ visib
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({  
   bottomSheetBackground: {
-    backgroundColor: Colors.background.light,
+    backgroundColor: colors.background.primary,
   },
   sheetTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     textAlign: 'center',
     marginVertical: 10,
-    color: Colors.text.lighter,
+    color: colors.text.primary,
   },
   notificationItem: {
     flexDirection: 'row',
@@ -175,7 +176,7 @@ const styles = StyleSheet.create({
   noNotifications: {
     textAlign: 'center',
     marginVertical: 20,
-    color: Colors.text.secondaryDark,
+    color: colors.text.secondary,
   },
 });
 

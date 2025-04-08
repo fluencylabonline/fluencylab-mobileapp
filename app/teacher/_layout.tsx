@@ -13,11 +13,10 @@ import TeacherDashboard from '@/app/teacher/home';
 import TeacherProfile from '@/app/teacher/profile';
 
 import { View, StyleSheet, useColorScheme } from 'react-native';
-import { Colors } from '@/constants/Colors';
 import Practice from './practice';
 import Chat from './chat';
 import Calendar from './calendar';
-
+import { useTheme } from '@/constants/useTheme';
 const Tab = createBottomTabNavigator();
 
 const _layout = () => {
@@ -25,9 +24,10 @@ const _layout = () => {
   const isDark = colorScheme === 'dark';
 
   // Define colors based on the theme
-  const tabBackground = isDark ? Colors.black.darkMode : '#D4CDF0';
-  const tabBarBackground = isDark ? Colors.background.darkMode : Colors.background.lightMode;
-  const activeCircleColor = isDark ? '#A28DE630' : '#A28DE680';
+  const { colors } = useTheme();
+  const tabBackground = colors.cards.primary;
+  const tabBarBackground = colors.cards.primary;
+  const activeCircleColor = colors.cards.primary;
 
   return (
     <View style={[styles.tabContainer, { backgroundColor: tabBarBackground }]}>

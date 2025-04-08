@@ -2,7 +2,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons'; // Make sure @expo/vector-icons is installed
-
+import { useTheme } from '@/constants/useTheme';
 const { width: screenWidth } = Dimensions.get('window');
 
 // Keyboard layout configuration
@@ -20,8 +20,6 @@ interface KeyboardProps {
     keyBackgroundColors: Record<string, string>;
     /** An optional object mapping keys to their desired text color string. Defaults will be used if not provided. */
     keyTextColors?: Record<string, string>;
-    /** Boolean indicating if dark mode is active, used for default styling. */
-    isDarkMode: boolean;
 }
 
 /**
@@ -32,17 +30,17 @@ interface KeyboardProps {
 const Keyboard: React.FC<KeyboardProps> = ({
     onKeyPress,
     keyBackgroundColors,
-    keyTextColors = {}, // Default to empty object if not provided
-    isDarkMode,
+    keyTextColors = {},
 }) => {
+    const { colors } = useTheme();
     // Get styles based on the current theme mode
-    const styles = getKeyboardStyles(isDarkMode);
+    const styles = getKeyboardStyles(colors);
 
     // Define default colors based on the current theme
     // These are used if a specific color isn't provided in keyBackgroundColors/keyTextColors
-    const defaultBgColor = isDarkMode ? '#555555' : '#D3D6DA'; // Darker/Lighter Gray
-    const defaultTextColor = isDarkMode ? '#FFFFFF' : '#1A1A1B'; // White/Near Black
-    const specialKeyBgColor = isDarkMode ? '#444444' : '#A7ADC0'; // Darker/Lighter Gray for special keys
+    const defaultBgColor = colors.text.primary; // Darker/Lighter Gray
+    const defaultTextColor = colors.text.primary; // White/Near Black
+    const specialKeyBgColor = colors.colors.indigo; // Darker/Lighter Gray for special keys
 
     return (
         // Container for the entire keyboard
@@ -91,13 +89,13 @@ const Keyboard: React.FC<KeyboardProps> = ({
 };
 
 // Function to generate themed styles for the Keyboard
-const getKeyboardStyles = (isDarkMode: boolean) => StyleSheet.create({
+const getKeyboardStyles = (colors: any) => StyleSheet.create({
     keyboardContainer: {
         alignSelf: 'stretch', // Take full width available in the parent
         alignItems: 'center', // Center rows horizontally
         paddingVertical: 8, // Vertical padding around the keyboard
         paddingHorizontal: 3, // Horizontal padding around the keyboard
-        backgroundColor: isDarkMode ? '#1A1A1B' : '#DADCE0', // Background for the keyboard area
+        backgroundColor: colors.cards.secondary, // Background for the keyboard area
     },
     row: {
         flexDirection: 'row', // Arrange keys horizontally

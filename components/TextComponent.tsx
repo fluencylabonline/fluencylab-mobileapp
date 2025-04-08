@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, useColorScheme, TextProps } from 'react-native';
+import { Text, TextProps } from 'react-native';
 
 import {
   useFonts,
@@ -9,8 +9,7 @@ import {
   Quicksand_600SemiBold,
   Quicksand_700Bold,
 } from '@expo-google-fonts/quicksand';
-import { Colors } from '../constants/Colors';
-
+import { useTheme } from '@/constants/useTheme';
 // Font weight options
 type FontWeight = 'light' | 'regular' | 'medium' | 'semibold' | 'bold';
 
@@ -26,15 +25,13 @@ interface CustomTextProps extends TextProps {
 
 export const TextComponent: React.FC<CustomTextProps> = ({
   children,
-  weight = 'regular', // Default weight
-  size = 'medium', // Default size
-  color,
+  weight = 'regular',
+  size = 'medium',
   style,
   ...props
 }) => {
-  const colorScheme = useColorScheme();
-  // Use passed color if available; otherwise, use theme-based default
-  const textColor = color ?? (colorScheme === 'dark' ? Colors.text.darker : Colors.text.lighter);
+  const { colors } = useTheme();
+  const textColor = colors.text.primary;
 
   const [fontsLoaded] = useFonts({
     Quicksand_300Light,

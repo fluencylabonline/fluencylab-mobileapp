@@ -38,3 +38,13 @@ export type Report = {
     diaPagamento: any;
     relatorioDeAula?: Report;
   }
+
+  export interface VocabularyItem {
+    vocab: string; // Make sure this matches the actual field name in your data
+    translation?: string; // Optional fields
+    imageURL?: string;   // Optional or required depending on your games
+    // Add any other fields present in your VocabularyGame documents' vocabularies array
+    id?: string; // Often useful if items have unique IDs
+    hint?: string;
+    // ... etc.
+  }

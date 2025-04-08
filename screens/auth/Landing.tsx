@@ -4,11 +4,10 @@ import { StyleSheet, View, Text, TouchableOpacity, Animated, Image } from 'react
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { TextComponent } from '@/components/TextComponent';
-import { Colors } from '@/constants/Colors';
 import InputComponent from '@/components/InputComponent';
 import Container from '@/components/ContainerComponent';
 import ButtonComponent from '@/components/ButtonComponent';
-
+import { useTheme } from '@/constants/useTheme';
 const AnimatedImageBackground = Animated.createAnimatedComponent(View);
 type LandingPageNavigationProp = StackNavigationProp<RootStackParamList, 'Landing'>;
 
@@ -28,6 +27,8 @@ const Landing: React.FC<LandingPageProps> = ({ navigation }) => {
   const accountButtonFadeAnim = useRef(new Animated.Value(1)).current;
   const accountButtonTranslateAnim = useRef(new Animated.Value(0)).current;
   const expandButtonTranslateAnim = useRef(new Animated.Value(0)).current;
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
 
   const bottomSheetRef = useRef<BottomSheet>(null);
   const [snapIndex, setSnapIndex] = useState(0);
@@ -189,7 +190,7 @@ const Landing: React.FC<LandingPageProps> = ({ navigation }) => {
           enablePanDownToClose={false}
           index={0}
           handleIndicatorStyle={{
-            backgroundColor: 'gray',
+            backgroundColor: colors.colors.spaceBlue,
             width: snapIndex === 0 ? 70 : 100,
             height: 5,
             borderRadius: 2.5,
@@ -197,7 +198,7 @@ const Landing: React.FC<LandingPageProps> = ({ navigation }) => {
           }}
           onChange={handleSheetChange}
           backgroundStyle={{
-            backgroundColor: Colors.black.darkMode,
+            backgroundColor: colors.bottomSheet.background,
           }}
         >
           <BottomSheetView style={styles.bottomSheetContent}>
@@ -242,7 +243,7 @@ const Landing: React.FC<LandingPageProps> = ({ navigation }) => {
                 />
                 <Text
                   style={{
-                    color: Colors.text.secondaryDark,
+                    color: colors.text.secondary,
                     fontSize: 15,
                     position: 'absolute',
                     bottom: 5,
@@ -259,7 +260,7 @@ const Landing: React.FC<LandingPageProps> = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   backgroundImage: {
     flex: 1,
     width: '100%',

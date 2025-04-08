@@ -11,8 +11,7 @@ import { collection, onSnapshot } from 'firebase/firestore';
 
 import { useTheme } from '@/constants/useTheme'; // Adjust path as needed
 import { useToast } from '@/components/Toast/useToast'; // Adjust path as needed
-import { TextComponent } from '@/components/TextComponent'; // Use custom TextComponent
-import { Colors } from '@/constants/Colors'; // Import Colors for direct use if needed
+import { TextComponent } from '@/components/TextComponent';
 import { router } from 'expo-router';
 
 interface Game {
@@ -53,7 +52,18 @@ export default function ShowGames() {
 
   // --- Navigation ---
   const handleNavigateToGame = (game: Game) => {
-    router.push(`/screens/Games/Vocabulary/IsPlaying/IsPlaying?gameID=${game.id}`);
+    const params = {
+      gameID: game.id,
+      isSingleplayer: true, // or whatever value you need
+      gameData: JSON.stringify(game),
+      vocabularyData: JSON.stringify(game.vocabularies)
+    };
+  
+    const queryString = Object.entries(params)
+      .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+      .join('&');
+  
+    router.push(`/screens/Games/Vocabulary/IsPlaying/IsPlaying?${queryString}`);
   };
 
   // --- Render Item for FlatList ---
@@ -62,14 +72,14 @@ export default function ShowGames() {
 
     return (
       <TouchableOpacity
-        style={[styles.gameItemContainer, { backgroundColor: colors.cardBackground }]}
+        style={[styles.gameItemContainer, { backgroundColor: colors.cards.primary }]}
         onPress={() => handleNavigateToGame(item)}
       >
         <View style={styles.gameInfo}>
-          <TextComponent weight="semibold" size="medium" style={{ color: colors.text }}>
+          <TextComponent weight="semibold" size="medium" style={{ color: colors.text.primary }}>
             {item.name || 'Nome Indefinido'}
           </TextComponent>
-          <TextComponent size="small" style={{ color: colors.secondaryText }}>
+          <TextComponent size="small" style={{ color: colors.text.secondary }}>
             Total de palavras: {wordCount}
           </TextComponent>
         </View>
@@ -84,14 +94,14 @@ export default function ShowGames() {
 
   return (
     <View style={styles.container}>
-      <TextComponent weight="bold" size="large" style={[styles.title, { color: colors.text }]}>
+      <TextComponent weight="bold" size="large" style={[styles.title, { color: colors.text.primary }]}>
          Temas para Jogar Sozinho
       </TextComponent>
 
       {showLoadingIndicator ? (
          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={colors.secondaryText} />
-            <TextComponent style={[styles.loadingText, { color: colors.secondaryText }]}>
+            <ActivityIndicator size="large" color={colors.text.primary} />
+            <TextComponent style={[styles.loadingText, { color: colors.text.primary }]}>
                 Carregando temas...
             </TextComponent>
          </View>
@@ -102,7 +112,7 @@ export default function ShowGames() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContentContainer}
           ListEmptyComponent={
-            <TextComponent style={[styles.emptyText, { color: colors.secondaryText }]}>
+            <TextComponent style={[styles.emptyText, { color: colors.text.secondary }]}>
               Nenhum tema de vocabulário encontrado.
             </TextComponent>
           }

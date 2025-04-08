@@ -3,8 +3,7 @@ import { TextComponent } from "@/components/TextComponent";
 import TopBarComponent from "@/components/TopBarComponent";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from 'expo-router';
-import { TouchableOpacity, View, StyleSheet, ScrollView, useColorScheme } from "react-native";
-import { Colors } from '@/constants/Colors';
+import { TouchableOpacity, View, StyleSheet } from "react-native";
 import ClassStatusCalendar from "@/components/Calendar/ClassStatusCalendar";
 import { useState } from "react";
 import TasksIcon from '@/assets/icons/TasksIcon';
@@ -15,30 +14,30 @@ import TasksComponent from "@/components/Tasks/TaskComponent";
 import ReportsComponent from "@/components/Report/ReportComponent";
 import PlacementComponent from "@/components/Placement/PlacementComponent";
 import MaterialsComponent from "@/components/Material/MaterialsComponent";
-
+import { useTheme } from "@/constants/useTheme";
 export default function Painel(){
   const { studentID, studentName } = useLocalSearchParams();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
   const [activeModal, setActiveModal] = useState<'reports' | 'tasks' | 'placement' | null>(null);
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
 
   const cardStyle = {
     ...styles.card,
-    backgroundColor: isDark ? Colors.background.dark : Colors.background.light,
-    shadowColor: isDark ? "#000" : "#666",
+    backgroundColor: colors.background.primary,
+    shadowColor: colors.colors.black,
   };
 
   const subCardContainerStyle = {
     ...styles.subCardContainer,
-    backgroundColor: isDark ? Colors.background.dark : Colors.background.light,
-    shadowColor: isDark ? "#000" : "#666",
+    backgroundColor: colors.background.primary,
+    shadowColor: colors.colors.black,
   };
 
   return(
     <Container>
         <TopBarComponent
             title={studentName as string}
-            leftIcon={<TouchableOpacity onPress={router.back}><Ionicons name="arrow-back-sharp" size={26} color={isDark ? Colors.text.dark : Colors.text.light} /></TouchableOpacity>}
+            leftIcon={<TouchableOpacity onPress={router.back}><Ionicons name="arrow-back-sharp" size={26} color={colors.text.primary} /></TouchableOpacity>}
             rightIcon={<TouchableOpacity onPress={() => setActiveModal('tasks')}><TasksIcon /></TouchableOpacity>}
         />
         <View style={styles.scrollView}>
@@ -46,21 +45,21 @@ export default function Painel(){
               
               <TouchableOpacity style={subCardContainerStyle} onPress={() => router.push(`/screens/Aulas/Aulas?studentID=${studentID}&studentName=${studentName}`)}>
                 <NotebookVariationIcon />
-                <TextComponent weight="bold" style={[styles.cardText, { color: isDark ? Colors.text.dark : Colors.text.light }]}>
+                <TextComponent weight="bold" style={[styles.cardText, { color: colors.text.primary }]}>
                   Caderno
                 </TextComponent>
               </TouchableOpacity>
 
               <TouchableOpacity style={subCardContainerStyle} onPress={() => setActiveModal('reports')}>
                 <ReportIcon />
-                <TextComponent weight="bold" style={[styles.cardText, { color: isDark ? Colors.text.dark : Colors.text.light }]}>
+                <TextComponent weight="bold" style={[styles.cardText, { color: colors.text.primary }]}>
                   Relatório
                 </TextComponent>
               </TouchableOpacity>
 
               <TouchableOpacity style={subCardContainerStyle} onPress={() => setActiveModal('placement')}>
                 <PlacementIcon />
-                <TextComponent weight="bold" style={[styles.cardText, { color: isDark ? Colors.text.dark : Colors.text.light }]}>
+                <TextComponent weight="bold" style={[styles.cardText, { color: colors.text.primary }]}>
                   Nivelamento
                 </TextComponent>
               </TouchableOpacity>
@@ -92,7 +91,7 @@ export default function Painel(){
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   scrollView: {
     flex: 1,
     padding: 10,

@@ -38,7 +38,6 @@ import { TextComponent } from "@/components/TextComponent";
 import InputComponent from "@/components/InputComponent";
 import ButtonComponent from "@/components/ButtonComponent"; // Your provided ButtonComponent
 import { useTheme } from "@/constants/useTheme";
-import { Colors } from "@/constants/Colors"; // Your provided Colors
 import QuizTimer from '@/app/screens/Games/Quiz/QuizTimer';
 
 // Icons
@@ -62,8 +61,8 @@ interface UserData {
 
 // --- Component ---
 const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navigation, onClose }) => {
-  const { colors, isDark } = useTheme();
-
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
   // --- State ---
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
@@ -398,7 +397,7 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
 
     setUserAnswer(selectedOption); // Mark answer as selected
     setFeedback(isCorrect ? "Correto!" : `Errado! Resposta: ${correctOption?.option || 'N/A'}`);
-    setFeedbackColor(isCorrect ? Colors.teal.default : Colors.deepOrange.default);
+    setFeedbackColor(isCorrect ? colors.colors.teal : colors.colors.deepOrange);
     if (isCorrect) setScore((prevScore) => prevScore + 1);
 
     setShowNextButton(true); // *** ADDED: Show the Next button ***
@@ -419,55 +418,55 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
 
    // Memoized Render Deck Item
    const renderDeckItem = useCallback(({ item }: { item: Deck }) => (
-       <View style={[styles.deckItemContainer, { backgroundColor: colors.cardBackground, borderColor: colors.secondaryText || Colors.black.lighter }]}>
+       <View style={[styles.deckItemContainer, { backgroundColor: colors.cards.primary, borderColor: colors.text.secondary || colors.colors.black }]}>
            <TouchableOpacity onPress={() => openPlayQuiz(item)} style={styles.deckTouchable} disabled={!item.questions || item.questions.length === 0}>
                <View style={styles.deckInfo}>
-                   <Ionicons name="layers-outline" size={24} color={(!item.questions || item.questions.length === 0) ? colors.secondaryText : colors.text} />
-                   <TextComponent style={[styles.deckTitleText, { color: (!item.questions || item.questions.length === 0) ? colors.secondaryText : colors.text }]} weight="bold" numberOfLines={1}>{item.deckTitle}</TextComponent>
+                   <Ionicons name="layers-outline" size={24} color={(!item.questions || item.questions.length === 0) ? colors.text.secondary : colors.text.primary} />
+                   <TextComponent style={[styles.deckTitleText, { color: (!item.questions || item.questions.length === 0) ? colors.text.secondary : colors.text.primary }]} weight="bold" numberOfLines={1}>{item.deckTitle}</TextComponent>
                </View>
                {(!item.questions || item.questions.length === 0) && <TextComponent style={styles.noQuestionsText}>(Vazio)</TextComponent>}
-               <TextComponent style={[styles.deckScoreText, { color: colors.secondaryText }]}>Pontos: {userScores[item.deckTitle] ?? 'N/A'}</TextComponent>
+               <TextComponent style={[styles.deckScoreText, { color: colors.text.secondary }]}>Pontos: {userScores[item.deckTitle] ?? 'N/A'}</TextComponent>
            </TouchableOpacity>
            {userRole === 'teacher' && (
                <View style={styles.teacherActions}>
                    <TouchableOpacity onPress={() => { if (isMountedRef.current) { setSelectedDeck(item); setIsStudentModalVisible(true); } }} disabled={!item.questions || item.questions.length === 0}>
-                       <Ionicons name="person-add-outline" size={26} color={(!item.questions || item.questions.length === 0) ? colors.secondaryText : Colors.indigo.default} style={styles.iconStyle} />
+                       <Ionicons name="person-add-outline" size={26} color={(!item.questions || item.questions.length === 0) ? colors.text.secondary : colors.colors.indigo} style={styles.iconStyle} />
                    </TouchableOpacity>
                    <TouchableOpacity onPress={() => handleDeleteDeck(item.id, item.deckTitle)}>
-                       <Ionicons name="trash-outline" size={26} color={Colors.deepOrange.default} style={styles.iconStyle} />
+                        <Ionicons name="trash-outline" size={26} color={colors.colors.deepOrange} style={styles.iconStyle} />
                    </TouchableOpacity>
                </View>
            )}
        </View>
-   ), [colors.cardBackground, colors.secondaryText, colors.text, userScores, userRole, openPlayQuiz, handleDeleteDeck]); // Memoization deps
+   ), [colors.cards.primary, colors.text.secondary, colors.text.primary, userScores, userRole, openPlayQuiz, handleDeleteDeck]); // Memoization deps
 
 
     // Memoized Render Option Item for Quiz Play
     const renderPlayOption = useCallback(({ item }: { item: Option }) => {
         const isSelected = userAnswer === item.option;
-        let dynamicBackgroundColor = colors.cardBackground;
+        let dynamicBackgroundColor = colors.cards.primary;
         let iconName: keyof typeof Ionicons.glyphMap | null = "ellipse-outline";
-        let iconColor = colors.secondaryText || colors.text;
-        let textColor = colors.text;
+        let iconColor = colors.text.secondary;
+        let textColor = colors.text.primary;
         const hasAnswered = userAnswer !== null;
 
         if (hasAnswered) { // Feedback phase
             if (item.isCorrect) {
-                dynamicBackgroundColor = Colors.teal.lightest; iconName = "checkmark-circle"; // Solid checkmark
-                iconColor = Colors.teal.darker; textColor = Colors.teal.darker;
+                dynamicBackgroundColor = colors.colors.teal; iconName = "checkmark-circle"; // Solid checkmark
+                iconColor = colors.colors.teal; textColor = colors.colors.teal;
             } else if (isSelected) { // Incorrectly selected
-                dynamicBackgroundColor = Colors.deepOrange.lightest; iconName = "close-circle"; // Solid X
-                iconColor = Colors.deepOrange.darker; textColor = Colors.deepOrange.darker;
+                dynamicBackgroundColor = colors.colors.deepOrange; iconName = "close-circle"; // Solid X
+                iconColor = colors.colors.deepOrange; textColor = colors.colors.deepOrange;
             } else { // Incorrect, not selected
-                 dynamicBackgroundColor = colors.cardBackground; iconName = "ellipse-outline"; // Faded/disabled look
-                 iconColor = colors.secondaryText; textColor = colors.secondaryText;
+                 dynamicBackgroundColor = colors.cards.primary; iconName = "ellipse-outline"; // Faded/disabled look
+                iconColor = colors.text.secondary; textColor = colors.text.secondary;
             }
         } else { // Selection phase (no answer yet)
              // Style for selectable options (could add hover effect if needed)
-             dynamicBackgroundColor = colors.cardBackground; // Default background
+             dynamicBackgroundColor = colors.cards.primary; // Default background
              iconName = "ellipse-outline";
-             iconColor = colors.text; // Use primary text color for selection icons
-             textColor = colors.text;
+             iconColor = colors.text.primary; // Use primary text color for selection icons
+             textColor = colors.text.primary;
         }
 
         return (
@@ -487,7 +486,7 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
                 <TextComponent style={[styles.playOptionText, { color: textColor }]}>{item.option}</TextComponent>
             </TouchableOpacity>
         );
-    }, [userAnswer, colors.cardBackground, colors.secondaryText, colors.text, handleAnswerSelect]); // Memoization deps
+    }, [userAnswer, colors.cards.primary, colors.text.secondary, colors.text.primary, handleAnswerSelect]); // Memoization deps
 
 
     // Dismiss Keyboard wrapper
@@ -501,8 +500,8 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
   if (isLoadingAuth) {
       return (
           <Container style={styles.centered}>
-              <ActivityIndicator size="large" color={colors.text} />
-              <TextComponent style={{color: colors.text, marginTop: 10}}>Verificando autenticação...</TextComponent>
+              <ActivityIndicator size="large" color={colors.text.primary} />
+              <TextComponent style={{color: colors.text.primary, marginTop: 10}}>Verificando autenticação...</TextComponent>
           </Container>
       );
   }
@@ -510,19 +509,19 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
   return (
     <DismissKeyboard>
     <Container>
-        <View style={[styles.header, {borderBottomColor: colors.secondaryText || Colors.black.lighter}]}>
+        <View style={[styles.header, {borderBottomColor: colors.text.secondary || colors.colors.black}]}>
             <InputComponent
                 placeholder="Procurar por deck..."
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 style={styles.searchInput}
-                placeholderTextColor={colors.secondaryText}
+                placeholderTextColor={colors.text.secondary}
             />
         </View>
 
         {/* Show loading indicator specifically when fetching decks initially */}
         {isLoadingData && decks.length === 0 && !searchQuery && (
-             <ActivityIndicator size="large" color={colors.text} style={styles.loadingIndicator} />
+             <ActivityIndicator size="large" color={colors.text.primary} style={styles.loadingIndicator} />
         )}
 
         <FlatList
@@ -532,7 +531,7 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
             style={styles.deckList}
             ListEmptyComponent={
                 !isLoadingData ? ( // Only show "No decks" if not loading
-                    <TextComponent style={[styles.emptyListText, {color: colors.secondaryText}]}>
+                    <TextComponent style={[styles.emptyListText, {color: colors.text.secondary}]}>
                         {searchQuery ? 'Nenhum deck encontrado.' : 'Nenhum quiz disponível.'}
                     </TextComponent>
                 ) : null
@@ -552,15 +551,15 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
              statusBarTranslucent={true}
          >
              <View style={styles.modalOverlay}>
-                 <View style={[styles.modalContainer, { backgroundColor: colors.cardBackground }]}>
+                 <View style={[styles.modalContainer, { backgroundColor: colors.cards.primary }]}>
                      <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
                            {/* Check selectedDeck and playQuestions robustly */}
                            {selectedDeck && playQuestions && playQuestions.length > 0 ? (
                              <>
-                             <View style={[styles.modalHeader, {borderColor: colors.secondaryText || Colors.black.lighter}]}>
-                                 <TextComponent weight="bold" size="large" style={{ color: colors.text, flex: 1, marginRight: 10 }} numberOfLines={1}>{selectedDeck.deckTitle}</TextComponent>
+                             <View style={[styles.modalHeader, {borderColor: colors.text.secondary || colors.colors.black}]}>
+                                 <TextComponent weight="bold" size="large" style={{ color: colors.text.primary, flex: 1, marginRight: 10 }} numberOfLines={1}>{selectedDeck.deckTitle}</TextComponent>
                                  <TouchableOpacity onPress={closePlayQuiz}>
-                                     <Ionicons name="close-circle-outline" size={30} color={colors.text} />
+                                     <Ionicons name="close-circle-outline" size={30} color={colors.text.primary} />
                                  </TouchableOpacity>
                              </View>
 
@@ -580,10 +579,10 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
                                {currentQuestionIndex < playQuestions.length ? (
                                    // --- Active Question View ---
                                    <View style={styles.playArea}>
-                                       <TextComponent style={[styles.questionCountText, { color: colors.secondaryText }]}>
+                                       <TextComponent style={[styles.questionCountText, { color: colors.text.secondary }]}>
                                            Pergunta {currentQuestionIndex + 1} de {playQuestions.length}
                                        </TextComponent>
-                                       <TextComponent weight="bold" size="medium" style={[styles.playQuestionTitle, { color: colors.text }]}>
+                                       <TextComponent weight="bold" size="medium" style={[styles.playQuestionTitle, { color: colors.text.primary }]}>
                                            {/* Safe access to question title */}
                                            {playQuestions[currentQuestionIndex]?.questionTitle || "Carregando pergunta..."}
                                        </TextComponent>
@@ -600,7 +599,7 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
                                                 extraData={userAnswer} // Ensure re-render when userAnswer changes
                                             />
                                        ) : (
-                                           <ActivityIndicator color={colors.text} style={{marginTop: 20}}/>
+                                           <ActivityIndicator color={colors.text.primary} style={{marginTop: 20}}/>
                                        )}
 
                                        {/* Feedback shown only after answering */}
@@ -623,9 +622,9 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
                                ) : (
                                    // --- Quiz Finished View ---
                                    <View style={styles.playArea}>
-                                       <Ionicons name="trophy-outline" size={60} color={Colors.amber.default} style={{marginBottom: 15}}/>
-                                       <TextComponent weight="bold" size="large" style={[styles.finalScoreTitle, { color: colors.text }]}>Quiz Completo!</TextComponent>
-                                       <TextComponent size="medium" style={[styles.finalScoreText, { color: colors.text }]}>Sua pontuação: {score} / {playQuestions.length}</TextComponent>
+                                       <Ionicons name="trophy-outline" size={60} color={colors.colors.amber} style={{marginBottom: 15}}/>
+                                       <TextComponent weight="bold" size="large" style={[styles.finalScoreTitle, { color: colors.text.primary }]}>Quiz Completo!</TextComponent>
+                                       <TextComponent size="medium" style={[styles.finalScoreText, { color: colors.text.primary }]}>Sua pontuação: {score} / {playQuestions.length}</TextComponent>
                                        <ButtonComponent title="Fechar" onPress={closePlayQuiz} style={{ marginTop: 20 }} color="teal" />
                                    </View>
                                )}
@@ -633,8 +632,8 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
                            ) : (
                                // --- Loading/Error State within Modal ---
                                <View style={styles.centered}>
-                                   <ActivityIndicator size="large" color={colors.text} />
-                                   <TextComponent style={{color: colors.text, marginTop: 10}}>Carregando Quiz...</TextComponent>
+                                   <ActivityIndicator size="large" color={colors.text.primary} />
+                                   <TextComponent style={{color: colors.text.primary, marginTop: 10}}>Carregando Quiz...</TextComponent>
                                    <ButtonComponent title="Cancelar" onPress={closePlayQuiz} style={{marginTop: 20}} color="amber"/>
                                </View>
                            )}
@@ -653,17 +652,17 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
             statusBarTranslucent={true}
         >
             <View style={styles.modalOverlay}>
-                <View style={[styles.modalContainer, { backgroundColor: colors.cardBackground, maxHeight: '70%' }]}>
-                        <View style={[styles.modalHeader, {borderColor: colors.secondaryText || Colors.black.lighter}]}>
-                            <TextComponent weight="bold" size="large" style={{color: colors.text, flex: 1, marginRight: 10}}>Atribuir Tarefa de Quiz</TextComponent>
+                <View style={[styles.modalContainer, { backgroundColor: colors.cards.primary, maxHeight: '70%' }]}>
+                        <View style={[styles.modalHeader, {borderColor: colors.text.secondary || colors.colors.black}]}>
+                            <TextComponent weight="bold" size="large" style={{color: colors.text.primary, flex: 1, marginRight: 10}}>Atribuir Tarefa de Quiz</TextComponent>
                             <TouchableOpacity onPress={() => setIsStudentModalVisible(false)}>
-                                <Ionicons name="close-circle-outline" size={30} color={colors.text} />
+                                <Ionicons name="close-circle-outline" size={30} color={colors.text.primary} />
                             </TouchableOpacity>
                         </View>
-                        <TextComponent style={{marginBottom: 10, color: colors.secondaryText, paddingHorizontal: 20}}>Atribuir "{selectedDeck?.deckTitle || 'Deck selecionado'}" para:</TextComponent>
+                        <TextComponent style={{marginBottom: 10, color: colors.text.secondary, paddingHorizontal: 20}}>Atribuir "{selectedDeck?.deckTitle || 'Deck selecionado'}" para:</TextComponent>
 
                         {/* Loading indicator specific to student list */}
-                        {isLoadingData && students.length === 0 && ( <ActivityIndicator size="small" color={colors.text} style={{marginVertical: 20}}/> )}
+                        {isLoadingData && students.length === 0 && ( <ActivityIndicator size="small" color={colors.text.primary} style={{marginVertical: 20}}/> )}
 
                         {students.length > 0 ? (
                             <FlatList
@@ -671,11 +670,11 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
                                 keyExtractor={(item) => item.id}
                                 renderItem={({ item }) => (
                                     <TouchableOpacity
-                                        style={[ styles.studentSelectItem, { backgroundColor: selectedStudentId === item.id ? Colors.indigo.lightest : (isDark ? Colors.black.darker : Colors.background.light), borderColor: selectedStudentId === item.id ? Colors.indigo.default : colors.secondaryText } ]}
+                                        style={[ styles.studentSelectItem, { backgroundColor: selectedStudentId === item.id ? colors.colors.indigo : colors.background.list, borderColor: selectedStudentId === item.id ? colors.colors.indigo : colors.text.secondary } ]}
                                         onPress={() => setSelectedStudentId(item.id)}
                                     >
-                                        <Ionicons name={selectedStudentId === item.id ? "radio-button-on" : "ellipse-outline"} size={20} color={selectedStudentId === item.id ? Colors.indigo.darker : colors.text} />
-                                        <TextComponent style={{marginLeft: 10, color: colors.text, flex: 1}} numberOfLines={1}>{item.name || item.email || `ID: ${item.id.substring(0, 8)}...`}</TextComponent>
+                                        <Ionicons name={selectedStudentId === item.id ? "radio-button-on" : "ellipse-outline"} size={20} color={selectedStudentId === item.id ? colors.colors.indigo : colors.text.primary} />
+                                        <TextComponent style={{marginLeft: 10, color: colors.text.primary, flex: 1}} numberOfLines={1}>{item.name || item.email || `ID: ${item.id.substring(0, 8)}...`}</TextComponent>
                                     </TouchableOpacity>
                                 )}
                                 style={styles.studentList}
@@ -684,10 +683,10 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
                             />
                         ) : (
                            // Show "No students" only if not loading
-                           !isLoadingData && <TextComponent style={[styles.emptyListText, {color: colors.secondaryText, marginVertical: 20}]}>Nenhum aluno encontrado.</TextComponent>
+                           !isLoadingData && <TextComponent style={[styles.emptyListText, {color: colors.text.secondary, marginVertical: 20}]}>Nenhum aluno encontrado.</TextComponent>
                         )}
 
-                        <View style={[styles.modalFooter, {borderColor: colors.secondaryText || '#ccc'}]}>
+                        <View style={[styles.modalFooter, {borderColor: colors.text.secondary || '#ccc'}]}>
                             <ButtonComponent title="Cancelar" onPress={() => setIsStudentModalVisible(false)} color="amber" />
                             <ButtonComponent
                                 title={isLoadingData ? "Atribuindo..." : "Atribuir Tarefa"} // Better loading text
@@ -709,7 +708,7 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
 const { width: screenWidth, height: screenHeight} = Dimensions.get('window');
 const modalMaxWidth = 500; // Max width for modals on larger screens
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
     centered: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
     header: { flexDirection: 'row', paddingHorizontal: 15, paddingVertical: 10, alignItems: 'center', borderBottomWidth: 1, gap: 10, /* borderColor set in component */ },
     searchInput: { flex: 1, height: 45 },
@@ -719,7 +718,7 @@ const styles = StyleSheet.create({
     deckInfo: { flexDirection: 'row', alignItems: 'center', flexShrink: 1, marginRight: 8, gap: 10 },
     deckTitleText: { fontSize: 16, flexShrink: 1 },
     deckScoreText: { fontSize: 14, textAlign: 'right', marginLeft: 'auto', paddingLeft: 8 }, // Use auto margin for push, add padding
-    noQuestionsText: { fontSize: 12, color: Colors.deepOrange.default, fontStyle: 'italic', marginLeft: 5 }, // Style for (Vazio) text
+    noQuestionsText: { fontSize: 12, color: colors.colors.deepOrange, fontStyle: 'italic', marginLeft: 5 }, // Style for (Vazio) text
     teacherActions: { flexDirection: 'row', alignItems: 'center', gap: 18, marginLeft: 10 }, // Add margin if score pushes too close
     iconStyle: { padding: 3 },
     emptyListText: { textAlign: 'center', marginTop: 30, fontSize: 16 },

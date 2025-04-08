@@ -28,7 +28,6 @@ import {
 } from "firebase/firestore";
 import { useNavigation } from "@react-navigation/native"; // Assuming you use react-navigation
 import Clipboard from "expo-clipboard"; // For clipboard functionality
-import { Colors } from "@/constants/Colors";
 import BottomSheet, {
   BottomSheetFlatList,
   BottomSheetView,
@@ -58,7 +57,8 @@ interface VocabularyProps {
 }
 
 export default function Vocabulary({ onClose }: VocabularyProps) {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
+
   const { showToast } = useToast();
   const navigation = useNavigation<VocabularyNavigationProp>(); // Hook for navigation
 
@@ -307,7 +307,7 @@ export default function Vocabulary({ onClose }: VocabularyProps) {
   };
 
   // --- Render ---
-  const styles = StyleSheet.create({
+  const getStyles = (colors: any) => StyleSheet.create({
     inputContainer: {
       marginHorizontal: 40,
       gap: 20,
@@ -319,21 +319,21 @@ export default function Vocabulary({ onClose }: VocabularyProps) {
       gap: 5,
     },
     buttonConfirm: {
-      backgroundColor: Colors.teal.default, // Example color
+      backgroundColor: colors.colors.teal, // Example color
     },
     buttonOrange: {
-      backgroundColor: Colors.amber.default, // Example color
+      backgroundColor: colors.colors.amber, // Example color
     },
     buttonGray: {
-      backgroundColor: Colors.black.lighter, // Example color
+      backgroundColor: colors.colors.black, // Example color
     },
     buttonText: {
-      color: Colors.background.lightMode, // White text usually works well
+      color: colors.colors.white, // White text usually works well
       fontSize: 16,
       fontWeight: "bold",
     },
     buttonTextGray: {
-      color: Colors.black.darkest, // Darker text for gray button
+      color: colors.colors.black, // Darker text for gray button
       fontSize: 16,
       fontWeight: "bold",
     },
@@ -399,12 +399,14 @@ export default function Vocabulary({ onClose }: VocabularyProps) {
       alignItems: "center",
     },
   });
+  
+  const styles = getStyles(colors);
 
   if (isLoadingAuth) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.secondaryText} />
-        <Text style={{ color: colors.text, marginTop: 10 }}>
+        <ActivityIndicator size="large" color={colors.text.secondary} />
+        <Text style={{ color: colors.text.primary, marginTop: 10 }}>
           Verificando autenticação...
         </Text>
       </View>
@@ -419,6 +421,7 @@ export default function Vocabulary({ onClose }: VocabularyProps) {
     console.log("openInstructionsSheet");
   };
 
+  
   return (
     <Container>
       <TopBarComponent
@@ -428,14 +431,14 @@ export default function Vocabulary({ onClose }: VocabularyProps) {
             onPress={handleBack}
             name="arrow-back"
             size={28}
-            color={colors.text}
+            color={colors.text.primary}
           />
         }
         rightIcon={
           <Ionicons
             name="help-circle-outline"
             size={24}
-            color={colors.text}
+            color={colors.text.primary}
             onPress={openInstructionsSheet}
           />
         }
@@ -445,7 +448,7 @@ export default function Vocabulary({ onClose }: VocabularyProps) {
       <View style={styles.inputContainer}>
         <InputComponent
           placeholder="Coloque o ID da sala aqui"
-          placeholderTextColor={colors.secondaryText} // Use theme color
+          placeholderTextColor={colors.text.secondary} // Use theme color
           value={joinGameCode}
           onChangeText={setJoinGameCode}
           autoCapitalize="none"
@@ -456,7 +459,7 @@ export default function Vocabulary({ onClose }: VocabularyProps) {
             disabled={isLoadingData}
             title={
               isLoadingData && joinGameCode ? (
-                <ActivityIndicator color={Colors.background.lightMode} />
+                <ActivityIndicator color={colors.colors.teal} />
               ) : (
                 "Entrar na Sala"
               )
@@ -491,13 +494,11 @@ export default function Vocabulary({ onClose }: VocabularyProps) {
           }
         }}
         handleIndicatorStyle={{
-          backgroundColor: Colors.indigo.darker,
+          backgroundColor: colors.colors.indigo,
           width: 65,
         }}
         backgroundStyle={{
-          backgroundColor: isDark
-            ? Colors.background.darker
-            : Colors.background.lighter,
+          backgroundColor: colors.cards.primary,
         }}
       >
         <BottomSheetView style={styles.bottomSheetContent}>
@@ -512,7 +513,7 @@ export default function Vocabulary({ onClose }: VocabularyProps) {
             <ActivityIndicator
               style={styles.activityIndicator}
               size="large"
-              color={colors.secondaryText}
+              color={colors.text.secondary}
             />
           ) : (
             <BottomSheetFlatList
@@ -530,7 +531,7 @@ export default function Vocabulary({ onClose }: VocabularyProps) {
                       isLoadingData ? (
                         <ActivityIndicator
                           size="small"
-                          color={Colors.background.lightMode}
+                          color={colors.colors.white}
                         />
                       ) : (
                         "Selecionar"
@@ -544,7 +545,7 @@ export default function Vocabulary({ onClose }: VocabularyProps) {
                   weight="bold"
                   size="medium"
                   style={{
-                    color: colors.secondaryText,
+                    color: colors.text.secondary,
                     textAlign: "center",
                     marginTop: 20,
                   }}

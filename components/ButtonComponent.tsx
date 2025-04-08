@@ -1,7 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, StyleProp, ViewStyle, TextStyle, View } from 'react-native';
-import { Colors } from '../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '@/constants/useTheme';
 
 import {
   useFonts,
@@ -11,15 +11,14 @@ import {
   Quicksand_600SemiBold,
   Quicksand_700Bold
 } from '@expo-google-fonts/quicksand';
-import { useTheme } from '@/constants/useTheme';
 
 interface ButtonProps {
   title: any;
   onPress: () => void;
-  color?: keyof typeof Colors;
+  color?: 'indigo' | 'amber' | 'teal' | 'spaceBlue' | 'deepOrange';
   style?: StyleProp<ViewStyle>;
   textStyle?: StyleProp<TextStyle>;
-  iconName?: keyof typeof Ionicons.glyphMap; // Optional icon
+  iconName?: keyof typeof Ionicons.glyphMap;
   iconSize?: number;
   iconColor?: string;
   disabled?: boolean;
@@ -36,8 +35,8 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   iconSize = 20,
   iconColor = '#FFFFFF',
 }) => {
-  const buttonColor = Colors[color]?.darker || Colors.indigo.darker;
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
+  const buttonColor = colors.colors[color as keyof typeof colors.colors] || colors.colors.indigo;
 
   let [fontsLoaded] = useFonts({
     Quicksand_300Light,
@@ -58,7 +57,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
     >
       <View style={styles.content}>
         {iconName && <Ionicons name={iconName} size={iconSize} color={iconColor} />}
-        <Text style={[styles.text, textStyle, {color: isDark ? Colors.text.darker : Colors.text.darker}]}>{title}</Text>
+        <Text style={[styles.text, textStyle, {color: colors.text.primary}]}>{title}</Text>
       </View>
     </TouchableOpacity>
   );

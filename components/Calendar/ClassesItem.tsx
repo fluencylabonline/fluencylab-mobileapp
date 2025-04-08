@@ -2,7 +2,7 @@ import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { TextComponent } from '../TextComponent';
-import { Colors } from '@/constants/Colors';
+import { useTheme } from '@/constants/useTheme';
 
 interface ClassDateItemProps {
     date: Date;
@@ -13,17 +13,20 @@ interface ClassDateItemProps {
 }
 
 const getStatusStyles = (status: string) => {
+    const { colors } = useTheme();
+    const styles = getStyles(colors);
+
     switch (status) {
         case 'Feita':
-            return { color: Colors.teal.default, backgroundColor: Colors.teal.default };
+            return { color: colors.text.primary, backgroundColor: colors.colors.teal };
         case 'Cancelada':
-            return { color: Colors.amber.default, backgroundColor: Colors.amber.default };
+            return { color: colors.text.primary, backgroundColor: colors.colors.amber };
         case 'À Fazer':
-            return { color: Colors.spaceBlue.default, backgroundColor: Colors.spaceBlue.default };
+            return { color: colors.text.primary, backgroundColor: colors.colors.spaceBlue };
         case 'Atrasada':
-            return { color: Colors.deepOrange.default, backgroundColor: Colors.deepOrange.default };
+            return { color: colors.text.primary, backgroundColor: colors.colors.deepOrange };
         default:
-            return { color: Colors.text.light, backgroundColor: Colors.background.light };
+            return { color: colors.text.primary, backgroundColor: colors.background.primary };
     }
 };
 
@@ -31,7 +34,9 @@ const ClassDateItem: React.FC<ClassDateItemProps> = ({ date, status, onDone, onC
     const statusStyles = getStatusStyles(status);
     const formattedDay = new Intl.DateTimeFormat('pt-PT', { weekday: 'short' }).format(date);
     const capitalizedDay = formattedDay.charAt(0).toUpperCase() + formattedDay.slice(1);
-
+    const { colors } = useTheme();
+    const styles = getStyles(colors);
+    
     return (
         <View style={styles.container}>
             <View style={styles.dateContainer}>
@@ -39,15 +44,15 @@ const ClassDateItem: React.FC<ClassDateItemProps> = ({ date, status, onDone, onC
                     {`${capitalizedDay}, ${date.getDate()}`}
                 </TextComponent>
             </View>
-            <TouchableOpacity style={[styles.button, { backgroundColor: Colors.teal.lighter }]} onPress={onDone}>
+            <TouchableOpacity style={[styles.button, { backgroundColor: colors.colors.teal }]} onPress={onDone}>
                 <TextComponent size='small' weight='bold' style={styles.buttonText}>Feita</TextComponent>
                 <Ionicons name="checkmark-circle-outline" size={16} color="white" />
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.button, { backgroundColor: Colors.amber.lighter }]} onPress={onCancel}>
+            <TouchableOpacity style={[styles.button, { backgroundColor: colors.colors.amber }]} onPress={onCancel}>
                 <TextComponent size='small' weight='bold' style={styles.buttonText}>Cancelar</TextComponent>
                 <Ionicons name="close-circle-outline" size={16} color="white" />
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.button, { backgroundColor: Colors.deepOrange.lighter }]} onPress={onDelete}>
+            <TouchableOpacity style={[styles.button, { backgroundColor: colors.colors.deepOrange }]} onPress={onDelete}>
                 <TextComponent size='small' weight='bold' style={styles.buttonText}>Deletar</TextComponent>
                 <Ionicons name="trash-outline" size={16} color="white" />
             </TouchableOpacity>
@@ -55,7 +60,7 @@ const ClassDateItem: React.FC<ClassDateItemProps> = ({ date, status, onDone, onC
     );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
     container: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -74,7 +79,7 @@ const styles = StyleSheet.create({
         borderRadius: 4,
     },
     buttonText: {
-        color: 'white',
+        color: colors.colors.white,
     },
 });
 

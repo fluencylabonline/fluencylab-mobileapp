@@ -2,13 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { View, ActivityIndicator, StyleSheet, Text, StatusBar, Platform } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { useLocalSearchParams } from 'expo-router';
-import { Colors } from '@/constants/Colors';
-
+import { useTheme } from '@/constants/useTheme';
 const EditorPage: React.FC = () => {
   const { notebookID, studentID, role } = useLocalSearchParams();
   const [url, setUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-
+  const { colors } = useTheme();
   useEffect(() => {
     const loadParams = async () => {
       try {
@@ -28,7 +27,7 @@ const EditorPage: React.FC = () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.indigo.default} />
+        <ActivityIndicator size="large" color={colors.colors.indigo} />
       </View>
     );
   }

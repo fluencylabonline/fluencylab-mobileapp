@@ -21,7 +21,6 @@ import { Ionicons } from '@expo/vector-icons';
 import Container from '@/components/ContainerComponent';
 import { TextComponent } from '@/components/TextComponent';
 import { useTheme } from '@/constants/useTheme';
-import { Colors } from '@/constants/Colors';
 import InputComponent from '@/components/InputComponent';
 import Loading from '@/components/Animation/Loading';
 
@@ -59,7 +58,8 @@ export default function ListeningPractice({ onClose }: ListeningPracticeProps) {
     const [inputsDisabled, setInputsDisabled] = useState(false);
     const { showToast } = useToast();
     const bottomSheetRef = useRef<BottomSheet>(null);
-    const { colors, isDark } = useTheme();
+    const { colors } = useTheme();
+    const styles = getStyles(colors);
     const [isKeyboardVisible, setKeyboardVisible] = useState(false);
 
     // Bottom Sheet state
@@ -146,7 +146,7 @@ export default function ListeningPractice({ onClose }: ListeningPracticeProps) {
         <TouchableOpacity
             style={[
                 styles.audioItem,
-                {backgroundColor: colors.cardBackgroundBottomSheet},
+                {backgroundColor: colors.bottomSheet.background},
                 selectedAudio?.id === item.id && styles.audioItemSelected
             ]}
             onPress={() => handleAudioSelect(item)}
@@ -155,13 +155,13 @@ export default function ListeningPractice({ onClose }: ListeningPracticeProps) {
             <Text
                 style={[
                     styles.audioItemText,
-                    {color: colors.text},
+                    {color: colors.text.primary},
                     selectedAudio?.id === item.id && styles.audioItemTextSelected
                 ]}
             >
                 {item.name}
             </Text>
-            <TextComponent color={colors.text} size="small" style={styles.transcriptSnippet}>{item.transcript.substring(0, 50)}...</TextComponent>
+            <TextComponent color={colors.text.primary} size="small" style={styles.transcriptSnippet}>{item.transcript.substring(0, 50)}...</TextComponent>
         </TouchableOpacity>
     ), [selectedAudio, handleAudioSelect]);
 
@@ -306,8 +306,8 @@ export default function ListeningPractice({ onClose }: ListeningPracticeProps) {
         <Container style={styles.mainContent}>
             <TopBarComponent
                 title="Listening Practice"
-                leftIcon={<Ionicons onPress={handleBack} name="arrow-back" size={28} color={colors.text} />}
-                rightIcon={<Ionicons onPress={handleRightIconPress} name="musical-notes-outline" size={28} color={colors.text} />}
+                leftIcon={<Ionicons onPress={handleBack} name="arrow-back" size={28} color={colors.text.primary} />}
+                rightIcon={<Ionicons onPress={handleRightIconPress} name="musical-notes-outline" size={28} color={colors.text.primary} />}
             />
 
             <KeyboardAvoidingView
@@ -332,21 +332,21 @@ export default function ListeningPractice({ onClose }: ListeningPracticeProps) {
                                                 <TextInput
                                                     style={[
                                                         styles.wordInput,
-                                                        { color: isDark ? 'white' : 'black' },
+                                                        { color: colors.text.primary },
                                                         input.isCorrect === true && {
-                                                            borderColor: Colors.teal.default,
-                                                            backgroundColor: isDark ? Colors.teal.darker : Colors.teal.lighter,
+                                                            borderColor: colors.colors.teal,
+                                                            backgroundColor: colors.colors.teal,
                                                         },
                                                         input.isCorrect === false && {
-                                                            borderColor: Colors.deepOrange.default,
-                                                            backgroundColor: isDark ? Colors.deepOrange.darker : Colors.deepOrange.lighter,
+                                                            borderColor: colors.colors.deepOrange,
+                                                            backgroundColor: colors.colors.deepOrange,
                                                         },
                                                     ]}
                                                     value={input.userAnswer}
                                                     onChangeText={(value) => handleInputChange(index, value)}
                                                     editable={!inputsDisabled}
                                                     placeholder="____"
-                                                    placeholderTextColor={colors.secondaryText} // Use theme secondary text
+                                                    placeholderTextColor={colors.text.secondary} // Use theme secondary text
                                                     autoCapitalize="none"
                                                     returnKeyType="next"
                                                 />
@@ -359,7 +359,7 @@ export default function ListeningPractice({ onClose }: ListeningPracticeProps) {
                             </ScrollView>
                              {!inputsDisabled && ( // Only show check button if not verified
                                 <TouchableOpacity
-                                    style={[styles.checkButton, {backgroundColor: Colors.spaceBlue.default}]}
+                                    style={[styles.checkButton, {backgroundColor: colors.colors.indigo}]}
                                     onPress={checkAnswers}
                                 >
                                     <TextComponent size="medium" weight="bold" color="white">
@@ -369,7 +369,7 @@ export default function ListeningPractice({ onClose }: ListeningPracticeProps) {
                              )}
                               {inputsDisabled && ( // Show reset button after verifying
                                 <TouchableOpacity
-                                    style={[styles.checkButton, {backgroundColor: Colors.spaceBlue.default, marginTop: 10}]} // Different color/margin
+                                    style={[styles.checkButton, {backgroundColor: colors.colors.indigo, marginTop: 10}]} // Different color/margin
                                     onPress={() => prepareWordInputs(selectedAudio.transcript)} // Reset action
                                 >
                                     <TextComponent size="medium" weight="bold" color="white">
@@ -380,8 +380,8 @@ export default function ListeningPractice({ onClose }: ListeningPracticeProps) {
                         </>
                     ) : (
                         <View style={styles.centered}>
-                            <TextComponent size="small" style={[styles.emptyTranscriptText, {color: colors.secondaryText}]}>
-                                Selecione um áudio no menu <Ionicons name="menu" size={18} color={Colors.indigo.default} />
+                            <TextComponent size="small" style={[styles.emptyTranscriptText, {color: colors.text.secondary}]}>
+                                Selecione um áudio no menu <Ionicons name="menu" size={18} color={colors.colors.indigo} />
                             </TextComponent>
                         </View>
                     )}
@@ -389,7 +389,7 @@ export default function ListeningPractice({ onClose }: ListeningPracticeProps) {
 
                 {/* --- CONDITIONAL Player Rendering (Keyboard UP) --- */}
                 {isKeyboardVisible && selectedAudio && (
-                    <View style={[styles.keyboardPlayerSection, { backgroundColor: colors.cardBackgroundBottomSheet }]}>
+                    <View style={[styles.keyboardPlayerSection, { backgroundColor: colors.bottomSheet.background }]}>
                         <AudioPlayer
                             sourceUrl={selectedAudio.url}
                             playbackRate={playbackRate}
@@ -404,7 +404,7 @@ export default function ListeningPractice({ onClose }: ListeningPracticeProps) {
 
             {/* --- CONDITIONAL Player Rendering (Keyboard DOWN - Original Position) --- */}
             {!isKeyboardVisible && (
-                <View style={[styles.playerSection, { backgroundColor: colors.cardBackgroundBottomSheet }]}>
+                <View style={[styles.playerSection, { backgroundColor: colors.bottomSheet.background }]}>
                     {selectedAudio ? (
                         <>
                             <TextComponent size="medium" weight="bold" style={styles.selectedAudioTitle} numberOfLines={1}>
@@ -423,7 +423,7 @@ export default function ListeningPractice({ onClose }: ListeningPracticeProps) {
                                         key={rate}
                                         style={[
                                             styles.playbackRateButton,
-                                            {backgroundColor: isDark ? Colors.background.darkMode : Colors.background.lightMode}, // Theme background
+                                            {backgroundColor: colors.background.primary}, // Theme background
                                             playbackRate === rate && styles.playbackRateButtonSelected, // Selected style
                                         ]}
                                         onPress={() => setPlaybackRate(rate)}
@@ -444,7 +444,7 @@ export default function ListeningPractice({ onClose }: ListeningPracticeProps) {
                         </>
                     ) : (
                          <View style={styles.centered}>
-                             <TextComponent color={colors.secondaryText} size="small">Nenhum áudio selecionado</TextComponent>
+                             <TextComponent color={colors.text.secondary} size="small">Nenhum áudio selecionado</TextComponent>
                         </View>
                     )}
                 </View>
@@ -458,12 +458,10 @@ export default function ListeningPractice({ onClose }: ListeningPracticeProps) {
                 enablePanDownToClose={true}
                 index={-1}
                 keyboardBehavior="extend"
-                handleIndicatorStyle={{ backgroundColor: Colors.spaceBlue.default, width: 65 }}
+                handleIndicatorStyle={{ backgroundColor: colors.colors.indigo, width: 65 }}
                 backgroundStyle={{
                     ...styles.bottomSheetContainer,
-                    backgroundColor: isDark
-                    ? Colors.background.dark
-                    : Colors.background.light,
+                    backgroundColor: colors.bottomSheet.background,
                 }}
             >
                 <View style={styles.bottomSheetContainer}>
@@ -486,11 +484,11 @@ export default function ListeningPractice({ onClose }: ListeningPracticeProps) {
                                     style={[
                                         styles.filterChip,
                                         selectedLanguages.includes(lang) && styles.filterChipSelected,
-                                        {backgroundColor: colors.cardBackgroundBottomSheet}
+                                        {backgroundColor: colors.bottomSheet.background}
                                     ]}
                                     onPress={() => toggleLanguage(lang)}
                                 >
-                                    <TextComponent color={colors.text} size="small" style={[
+                                    <TextComponent color={colors.text.primary} size="small" style={[
                                         styles.filterChipText,
                                         selectedLanguages.includes(lang) && styles.filterChipTextSelected
                                     ]}>{lang}
@@ -502,7 +500,7 @@ export default function ListeningPractice({ onClose }: ListeningPracticeProps) {
                                     style={styles.clearFilterButton}
                                     onPress={() => setSelectedLanguages([])}
                                 >
-                                    <TextComponent color={colors.secondaryText} size="small" style={styles.clearFilterText}>Limpar</TextComponent>
+                                    <TextComponent color={colors.text.primary} size="small" style={styles.clearFilterText}>Limpar</TextComponent>
                                 </TouchableOpacity>
                             )}
                         </ScrollView>
@@ -524,7 +522,7 @@ export default function ListeningPractice({ onClose }: ListeningPracticeProps) {
     );
 }
 
-const styles = StyleSheet.create({
+    const getStyles = (colors: any) => StyleSheet.create({
     // Main Layout
     mainContent: {
         flex: 1,
@@ -537,7 +535,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         padding: 20,
-        backgroundColor: '#f4f4f4',
+        backgroundColor: colors.background.primary,
     },
     loadingText: {
         marginTop: 10,
@@ -603,12 +601,12 @@ const styles = StyleSheet.create({
         lineHeight: 22, // Ensure text aligns nicely with inputs
     },
     correctInput: {
-        borderColor: Colors.teal.default,
-        backgroundColor: Colors.teal.lightest,
+        borderColor: colors.colors.teal,
+        backgroundColor: colors.colors.teal,
     },
     incorrectInput: {
-        borderColor: Colors.deepOrange.default,
-        backgroundColor: Colors.deepOrange.lightest,
+        borderColor: colors.colors.deepOrange,
+        backgroundColor: colors.colors.deepOrange,
     },
     checkButton: {
         marginTop: 15, // Space above the button
@@ -661,7 +659,7 @@ const styles = StyleSheet.create({
         marginHorizontal: 4,
     },
     playbackRateButtonSelected: {
-        backgroundColor: Colors.spaceBlue.default,
+        backgroundColor: colors.colors.indigo,
     },
     playbackRateText: {
         fontSize: 13,
@@ -710,7 +708,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
     },
     filterChipTextSelected: {
-        color: Colors.spaceBlue.default, // Darker orange
+        color: colors.colors.indigo, // Darker orange
         fontWeight: 'bold',
     },
     clearFilterButton: {
@@ -734,8 +732,8 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     audioItemSelected: {
-        backgroundColor: Colors.spaceBlue.lighter,
-        borderColor: Colors.spaceBlue.darker,
+        backgroundColor: colors.colors.indigo,
+        borderColor: colors.colors.indigo,
     },
     languageLabel: {
         fontSize: 12,

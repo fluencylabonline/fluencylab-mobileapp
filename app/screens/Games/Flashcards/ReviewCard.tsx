@@ -5,7 +5,6 @@ import { collection, doc, getDocs, orderBy, query, updateDoc, where } from 'fire
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { Ionicons } from '@expo/vector-icons';
 import { TextComponent } from '@/components/TextComponent';
-import { Colors } from '@/constants/Colors';
 import { useTheme } from '@/constants/useTheme';
 import Loading from '@/components/Animation/Loading';
 import Container from '@/components/ContainerComponent';
@@ -27,7 +26,8 @@ interface ReviewCardProps {
   }
   
   const ReviewCard: React.FC<ReviewCardProps> = ({ closeModalGame, selectedDeck }) => {
-    const { colors, isDark } = useTheme();
+    const { colors } = useTheme();
+    const styles = getStyles(colors);
     const [currentUser, setCurrentUser] = useState<any>(null);
     const auth = getAuth();
 
@@ -175,16 +175,16 @@ interface ReviewCardProps {
     return (
         <Container style={[styles.container]}>
             <View style={styles.headerContainer}>
-                <TextComponent weight="bold" size="large" style={[styles.headerTitle, { color: Colors.amber.default }]}>
+                <TextComponent weight="bold" size="large" style={[styles.headerTitle, { color: colors.colors.amber }]}>
                     {selectedDeck}
                 </TextComponent>
             </View>
             <TouchableOpacity style={styles.headerButton} onPress={closeModalGame}>
-                <Ionicons size={30} name='close-outline' color={colors.text}/>
+                <Ionicons size={30} name='close-outline' color={colors.text.primary}/>
             </TouchableOpacity>
 
-            <View style={[styles.progressBar, { backgroundColor: colors.cardBackgroundSecodary }]}>
-                <View style={[styles.progress, { backgroundColor: Colors.amber.default }]} />
+            <View style={[styles.progressBar, { backgroundColor: colors.cards.secondary }]}>
+                <View style={[styles.progress, { backgroundColor: colors.colors.amber }]} />
                 <TextComponent weight="bold" size="small" style={styles.progressText}>
                     {currentCard + 1} / {cards.length} cartões
                 </TextComponent>
@@ -192,13 +192,13 @@ interface ReviewCardProps {
             
             <View style={styles.cardStack}>
                 {cardsRemaining > 1 && (
-                    <View style={[styles.card, styles.cardBehind, { zIndex: 0, top: 10, left: 5, backgroundColor: colors.cardBackgroundBottomSheet }]} />
+                    <View style={[styles.card, styles.cardBehind, { zIndex: 0, top: 10, left: 5, backgroundColor: colors.bottomSheet.background }]} />
                 )}
                 {cardsRemaining > 0 && (
-                    <View style={[styles.card, styles.cardBehind, { zIndex: 1, backgroundColor: colors.cardBackground }]} />
+                    <View style={[styles.card, styles.cardBehind, { zIndex: 1, backgroundColor: colors.cards.primary }]} />
                 )}
                 <TouchableOpacity activeOpacity={1} onPress={flipCard} style={{ zIndex: 2 }}>
-                    <Animated.View style={[styles.card, { transform: [{ rotateY }, { scaleX }], backgroundColor: Colors.amber.default }]}>
+                    <Animated.View style={[styles.card, { transform: [{ rotateY }, { scaleX }], backgroundColor: colors.colors.amber }]}>
                         <TextComponent weight="bold" size="large" style={styles.cardText}>
                             {isFlipped ? currentCardData.back : currentCardData.front}
                         </TextComponent>
@@ -210,7 +210,7 @@ interface ReviewCardProps {
                 <View style={styles.buttonContainer}>
                     <TouchableOpacity 
                         onPress={() => reviewCard(currentCardData.id, 'easy')} 
-                        style={[styles.buttonStyle, { borderTopLeftRadius: 12, borderBottomLeftRadius: 12, paddingHorizontal: 20, backgroundColor: Colors.teal.default }]}
+                        style={[styles.buttonStyle, { borderTopLeftRadius: 12, borderBottomLeftRadius: 12, paddingHorizontal: 20, backgroundColor: colors.colors.teal }]}
                     >
                         <TextComponent weight="bold" size="medium" style={styles.textButtonStyle}>
                             Fácil
@@ -218,7 +218,7 @@ interface ReviewCardProps {
                     </TouchableOpacity>
                     <TouchableOpacity 
                         onPress={() => reviewCard(currentCardData.id, 'medium')} 
-                        style={[styles.buttonStyle, { paddingHorizontal: 20, backgroundColor: Colors.amber.default }]}
+                        style={[styles.buttonStyle, { paddingHorizontal: 20, backgroundColor: colors.colors.amber }]}
                     >
                         <TextComponent weight="bold" size="medium" style={styles.textButtonStyle}>
                             Médio
@@ -226,7 +226,7 @@ interface ReviewCardProps {
                     </TouchableOpacity>
                     <TouchableOpacity 
                         onPress={() => reviewCard(currentCardData.id, 'hard')} 
-                        style={[styles.buttonStyle, { borderTopRightRadius: 12, borderBottomRightRadius: 12, paddingHorizontal: 20, backgroundColor: Colors.deepOrange.default }]}
+                        style={[styles.buttonStyle, { borderTopRightRadius: 12, borderBottomRightRadius: 12, paddingHorizontal: 20, backgroundColor: colors.colors.deepOrange }]}
                     >
                         <TextComponent weight="bold" size="medium" style={styles.textButtonStyle}>
                             Difícil
@@ -238,7 +238,7 @@ interface ReviewCardProps {
             {!isFlipped && cards.length > 1 && (
                 <TouchableOpacity 
                     onPress={handleNextCard} 
-                    style={[styles.buttonStyle, { borderRadius: 12, paddingHorizontal: 30, backgroundColor: Colors.amber.default }]}
+                    style={[styles.buttonStyle, { borderRadius: 12, paddingHorizontal: 30, backgroundColor: colors.colors.amber }]}
                 >
                     <TextComponent weight="bold" size="medium" style={styles.textButtonStyle}>
                         Pular <Ionicons style={{paddingTop: 5}} name='arrow-forward-outline' />
@@ -249,7 +249,7 @@ interface ReviewCardProps {
     );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'center',
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
         marginVertical: 20,
     },
     cardText: {
-        color: 'white',
+        color: colors.colors.white,
         marginHorizontal: 18,
         textAlign: 'center'
     },
@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
         padding: 14,
     },
     textButtonStyle: {
-        color: 'white',
+        color: colors.colors.white,
     }
 });
 

@@ -4,7 +4,6 @@ import { Link, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { TextComponent } from '@/components/TextComponent';
 import InputComponent from '@/components/InputComponent';
-import { Colors } from '@/constants/Colors';
 import ButtonComponent from '@/components/ButtonComponent';
 import Container from '@/components/ContainerComponent';
 import { auth, db } from '@/config/firebase';
@@ -13,6 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { doc, getDoc } from 'firebase/firestore';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
+import { useTheme } from '@/constants/useTheme';  
 
 type LoginPageNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
 
@@ -20,7 +20,7 @@ interface LoginPageProps {
   navigation: LoginPageNavigationProp;
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   contentContainer: {
     flex: 1,
     paddingHorizontal: 20,
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
     left: 90,
   },
   forgottext: {
-    color: Colors.text.secondaryLight
+    color: colors.text.secondary
   },
 });
 
@@ -97,6 +97,8 @@ const Login: React.FC<LoginPageProps> = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -176,7 +178,7 @@ const Login: React.FC<LoginPageProps> = ({ navigation }) => {
             style={styles.contentContainer}
         >
         <TouchableOpacity onPress={goBack} style={{ position: 'absolute', top: 82, left: 12 }}>
-          <Ionicons color={Colors.indigo.default} name='arrow-back' size={32} />
+          <Ionicons color={colors.colors.indigo} name='arrow-back' size={32} />
         </TouchableOpacity>
         
         <View>
@@ -207,7 +209,7 @@ const Login: React.FC<LoginPageProps> = ({ navigation }) => {
                     <Switch
                         value={rememberMe}
                         onValueChange={setRememberMe}
-                        trackColor={{ false: 'gray', true: Colors.indigo.default }}
+                        trackColor={{ false: 'gray', true: colors.colors.indigo }}
                         thumbColor={rememberMe ? 'white' : 'white'}
                     />
                     <TextComponent size='small' style={{ marginRight: 8 }}>Lembrar de mim</TextComponent>

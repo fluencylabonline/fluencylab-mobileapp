@@ -19,19 +19,17 @@ import AdminDashboard from '@/app/admin/AdminDashboard';
 import AdminProfile from '@/app/admin/AdminProfile';
 
 import { Ionicons } from '@expo/vector-icons';
-import { View, StyleSheet, useColorScheme } from 'react-native';
-import { Colors } from '@/constants/Colors';
-
+import { View, StyleSheet } from 'react-native';
+import { useTheme } from '@/constants/useTheme';
 const Tab = createBottomTabNavigator();
 
 const TeacherTabNavigator = () => {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
 
   // Define colors based on the theme
-  const tabBackground = isDark ? Colors.black.darkMode : '#D4CDF0';
-  const tabBarBackground = isDark ? Colors.background.darkMode : Colors.background.lightMode;
-  const activeCircleColor = isDark ? '#A28DE630' : '#A28DE680';
+  const { colors } = useTheme();
+  const tabBackground = colors.cards.primary;
+  const tabBarBackground = colors.cards.primary;
+  const activeCircleColor = colors.cards.primary;
 
   return (
     <View style={[styles.tabContainer, { backgroundColor: tabBarBackground }]}>

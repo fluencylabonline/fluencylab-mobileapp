@@ -1,15 +1,16 @@
 import Container from "@/components/ContainerComponent";
 import InputComponent from "@/components/InputComponent";
 import { auth, db, storage } from "@/config/firebase";
-import { Colors } from "@/constants/Colors";
 import { query, collection, where, getDocs, getDoc, doc } from "firebase/firestore";
 import { ref, getDownloadURL } from "firebase/storage";
 import { useState, useEffect } from "react";
-import { View, useColorScheme, TextInput, StyleSheet, FlatList, Image, TouchableOpacity, RefreshControl } from 'react-native';
+import { View, useColorScheme, StyleSheet, FlatList, Image } from 'react-native';
 import PersonIcon from '@/assets/icons/PersonIcon';
 import { TextComponent } from "@/components/TextComponent";
-import { Link, useRouter } from 'expo-router';
+import { Link } from 'expo-router';
 import Loading from '@/components/Animation/Loading';
+import { useTheme } from "@/constants/useTheme";
+
 
 export default function Index(){
     const [professorId, setProfessorId] = useState<string | null>(null);
@@ -17,9 +18,10 @@ export default function Index(){
     const [userRole, setUserRole] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const colorScheme = useColorScheme();
-    const isDarkMode = colorScheme === 'dark';
-    const backgroundColor = isDarkMode ? Colors.background.dark : Colors.black.lighter;
+    const { colors } = useTheme();
+    const styles = getStyles(colors);
+
+    const backgroundColor = colors.background.primary;
 
     const fetchProfilePicture = async (uid: any) => {
       try {
@@ -141,7 +143,7 @@ export default function Index(){
                           <View
                               style={[
                               styles.statusBadge,
-                              { backgroundColor: item.status === 'online' ? Colors.teal.default : Colors.deepOrange.darker },
+                              { backgroundColor: item.status === 'online' ? colors.colors.teal : colors.colors.deepOrange },
                           ]}
                           />
                       </View>
@@ -156,7 +158,7 @@ export default function Index(){
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
     studentItem: {
         flexDirection: 'row',   
         alignItems: 'center', 
@@ -198,7 +200,7 @@ const styles = StyleSheet.create({
         height: 40,
         borderRadius: 20,
         paddingLeft: 10,
-        backgroundColor: '#fff',
+        backgroundColor: colors.background.list,
         fontSize: 16,
     }
 });

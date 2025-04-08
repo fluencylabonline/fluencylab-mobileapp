@@ -572,7 +572,6 @@ const GuesslyGameScreen = ({ onClose }: { onClose: () => void }) => { // Assumin
                 <Keyboard
                     onKeyPress={handleCustomKeyPress}
                     keyBackgroundColors={getKeyColors()} // Pass generated colors
-                    isDarkMode={isDarkMode} // Pass theme flag
                 />
             )}
 

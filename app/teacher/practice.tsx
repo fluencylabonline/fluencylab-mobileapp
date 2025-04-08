@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useRef } from "react";
 import {
   View,
   StyleSheet,
@@ -7,7 +7,6 @@ import {
   Animated,
 } from "react-native";
 import Container from "@/components/ContainerComponent";
-import { Colors } from "@/constants/Colors";
 import TopBarComponent from "@/components/TopBarComponent";
 import { useTheme } from "@/constants/useTheme";
 import { useRouter } from "expo-router";
@@ -22,11 +21,7 @@ const ITEM_HEIGHT = 235;
 
 export default function Practice() {
   const router = useRouter();
-  const { isDark } = useTheme();
-  const [showModal, setShowModal] = useState(false);
-  const [selectedGame, setSelectedGame] = useState<React.ReactNode | null>(
-    null
-  );
+  const { colors } = useTheme();
 
   const data: GamesItems[] = [
     {
@@ -98,9 +93,7 @@ export default function Practice() {
               style={[
                 styles.gameContainer,
                 {
-                  backgroundColor: isDark
-                    ? Colors.background.dark
-                    : Colors.background.light,
+                  backgroundColor: colors.background.primary,
                 },
               ]}
               onPress={() => router.push(item.path)}
@@ -135,7 +128,11 @@ export default function Practice() {
             return (
               <Animated.View
                 key={index}
-                style={[styles.dot, { transform: [{ scale }], opacity }]}
+                style={[
+                  styles.dot,
+                  { backgroundColor: colors.colors.indigo },
+                  { transform: [{ scale }], opacity }
+                ]}
               />
             );
           })}
@@ -149,10 +146,6 @@ const styles = StyleSheet.create({
   gamesContainer: {
     paddingBottom: 40,
     gap: 18,
-  },
-  modalContent: {
-    flex: 1,
-    backgroundColor: Colors.background.light,
   },
   gameContainer: {
     flex: 1,
@@ -186,7 +179,6 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: Colors.indigo.default,
     marginVertical: 4,
   },
 });

@@ -21,12 +21,11 @@ import WORDS_EN from './Database/words.json';    // Assuming this is English
 import WORDS_PT from './Database/palavras.json'; // Assuming this is Portuguese
 
 // Import theme and components (adjust paths if necessary)
-import { Colors } from '@/constants/Colors';
 import TopBarComponent from '@/components/TopBarComponent';
 import Container from '@/components/ContainerComponent';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/constants/useTheme';
-
+import { router } from 'expo-router';
 // --- Constants ---
 const { width } = Dimensions.get('window');
 const WORD_LENGTH = 5; // Standard Wordle length
@@ -43,13 +42,14 @@ const removeAccents = (str: string): string => {
         .replace(/[\u0300-\u036f]/g, "")
         .replace(/Ç/g, 'C');
 };
+
 // ---
 
 // --- Wordle Component ---
-const Wordle = ({ onClose }: { onClose: () => void }) => {
+const Wordle = () => {
     // --- Hooks ---
-    const { colors, isDark } = useTheme(); // Use 'isDark' from your theme hook
-    const styles = getStyles(isDark);
+    const { colors, isDark } = useTheme();
+    const styles = getStyles(colors, isDark);
     // --- State ---
     const [language, setLanguage] = useState<'en' | 'pt'>('en');
     const [currentWordList, setCurrentWordList] = useState<string[]>(WORDS_EN);
@@ -118,8 +118,6 @@ const Wordle = ({ onClose }: { onClose: () => void }) => {
     }, [word, guesses, currentRow, currentTileIndex, gameOver, resultMessage, showColors, keyColors, language, isLoading]);
 
     // --- Handlers ---
-
-    const handleBack = () => onClose();
 
     const handleChangeLanguage = async () => {
         if (isLoading) return;
@@ -219,7 +217,7 @@ const Wordle = ({ onClose }: { onClose: () => void }) => {
         // Define theme-aware colors (using fixed standard Wordle colors here)
         const correctColor = '#6AAA64'; // Green
         const presentColor = '#C9B458'; // Yellow
-        const absentColor = isDark ? '#3A3A3C' : '#787C7E'; // Dark/Light Gray
+        const absentColor = colors.text.primary; // Dark/Light Gray
 
         guess.forEach((letter) => {
             if (!letter) return;
@@ -245,7 +243,7 @@ const Wordle = ({ onClose }: { onClose: () => void }) => {
             }
         });
         setKeyColors(newColors);
-    }, [keyColors, isDark]); // Depend on keyColors and isDark for absent color
+    }, [keyColors]); // Depend on keyColors and isDark for absent color
 
 
     // --- Game State Persistence ---
@@ -345,9 +343,9 @@ const Wordle = ({ onClose }: { onClose: () => void }) => {
         const isCurrentRow = row === currentRow;
 
         // Default styles based on theme
-        let tileBgColor = isDark ? '#121212' : '#ffffff';
-        let tileBorderColor = isDark ? '#3A3A3C' : '#d3d6da'; // Use absent color for border
-        let textColor = isDark ? '#ffffff' : '#1A1A1B';
+        let tileBgColor = colors.cards.primary;
+        let tileBorderColor = colors.text.primary; // Use absent color for border
+        let textColor = colors.text.primary;
 
         if (isEvaluated && letter) {
              // Use normalizedWord (accent-free, uppercase) for comparison
@@ -363,16 +361,16 @@ const Wordle = ({ onClose }: { onClose: () => void }) => {
                 tileBorderColor = '#C9B458';
                 textColor = '#ffffff';
             } else {
-                tileBgColor = isDark ? '#3A3A3C' : '#787C7E'; // Gray (Absent)
-                tileBorderColor = isDark ? '#3A3A3C' : '#787C7E';
+                tileBgColor = colors.text.primary; // Gray (Absent)
+                tileBorderColor = colors.text.primary;
                 textColor = '#ffffff';
             }
         } else if (isCurrentRow && letter) {
             // Tile in current row being typed
-            tileBorderColor = isDark ? '#565758' : '#878a8c'; // Slightly lighter gray border
+            tileBorderColor = colors.colors.indigo; // Slightly lighter gray border
         } else if (!isCurrentRow && !letter) {
              // Keep default empty style for rows above current with no letter
-             tileBorderColor = isDark ? '#3A3A3C' : '#d3d6da';
+             tileBorderColor = colors.text.primary;
         }
 
 
@@ -405,27 +403,29 @@ const Wordle = ({ onClose }: { onClose: () => void }) => {
     // Loading State UI
     if (isLoading) {
         return (
-            <View style={[styles.container, styles.centered, { backgroundColor: colors.cardBackground }]}>
-                <ActivityIndicator size="large" color={colors.text} />
+            <View style={[styles.container, styles.centered, { backgroundColor: colors.cards.primary }]}>
+                <ActivityIndicator size="large" color={colors.text.primary} />
             </View>
         );
     }
 
-    
+    const handleGoBack = () => {
+        router.back();
+    };
 
 
     // Main Game UI
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : undefined} // "height" might be needed on Android
-            style={[styles.container, { backgroundColor: colors.cardBackground }]} // Use themed background
+            style={[styles.container, { backgroundColor: colors.cards.primary }]} // Use themed background
             keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0} // Adjust if header height differs
         >
             <Container style={{ flex: 1 }}>
                  <TopBarComponent
                      title="Wordle"
-                     leftIcon={<Ionicons onPress={handleBack} name="arrow-back" size={28} color={colors.text} />}
-                     rightIcon={<Ionicons onPress={handleChangeLanguage} name="language" size={28} color={colors.text} />}
+                     leftIcon={<Ionicons onPress={handleGoBack} name="arrow-back" size={28} color={colors.text.primary} />}
+                     rightIcon={<Ionicons onPress={handleChangeLanguage} name="language" size={28} color={colors.text.primary} />}
                      // Pass other theme-related props if needed by TopBarComponent
                  />
 <View style={styles.languageIndicator}>
@@ -440,7 +440,7 @@ const Wordle = ({ onClose }: { onClose: () => void }) => {
 
                     {gameOver && (
                         <View style={styles.resultContainer}>
-                            <Text style={[styles.resultMessage, { color: colors.text }]}>{resultMessage}</Text>
+                            <Text style={[styles.resultMessage, { color: colors.text.primary }]}>{resultMessage}</Text>
                             <TouchableOpacity style={styles.playAgainButton} onPress={handlePlayAgain}>
                                 <Text style={styles.playAgainText}>Jogar Novamente</Text>
                             </TouchableOpacity>
@@ -453,7 +453,6 @@ const Wordle = ({ onClose }: { onClose: () => void }) => {
                         <Keyboard
                             onKeyPress={handleKeyboardKeyPress}
                             keyBackgroundColors={keyColors}
-                            isDarkMode={isDark} // Pass theme status
                         />
                     </View>
                 )}
@@ -466,7 +465,7 @@ const Wordle = ({ onClose }: { onClose: () => void }) => {
 // Using isDark inside the component now, so getStyles is not needed here.
 // Add/adjust styles based on isDark where necessary.
 // Keeping the styles structure for clarity.
-const getStyles = (isDarkMode: boolean) => StyleSheet.create({
+const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   container: {
         flex: 1,
     },
@@ -520,7 +519,7 @@ const getStyles = (isDarkMode: boolean) => StyleSheet.create({
         marginBottom: 16,
     },
     playAgainButton: {
-        backgroundColor: Colors.amber.default ?? '#FFAE00',
+        backgroundColor: colors.colors.indigo || colors.colors.amber,
         paddingVertical: 10,
         paddingHorizontal: 20,
         borderRadius: 8,
@@ -536,15 +535,15 @@ const getStyles = (isDarkMode: boolean) => StyleSheet.create({
     languageIndicator: {
       width: '100%',
       paddingVertical: 8,
-      backgroundColor: isDarkMode ? '#1F1F1F' : '#FFFFFF',
+      backgroundColor: colors.cards.secondary,
       borderBottomWidth: 1,
-      borderBottomColor: isDarkMode ? '#333' : '#DDD',
+      borderBottomColor: colors.text.primary,
       alignItems: 'center',
   },
   languageText: {
       fontSize: 14,
       fontWeight: '500',
-      color: isDarkMode ? '#999' : '#666',
+      color: colors.text.primary,
   },
 });
 

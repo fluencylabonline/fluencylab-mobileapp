@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 
 import Container from "@/components/ContainerComponent";
 import { TextComponent } from "@/components/TextComponent";
-import { Colors } from "@/constants/Colors";
 import { View, TouchableOpacity, Image, StyleSheet } from "react-native";
 import { fetchUserData } from '@/hooks/fetchUserData';
 import NotificationIcon from '@/assets/icons/NotificationIcon';
 import { useTheme } from '@/constants/useTheme';
 import BottomSheetNotification from '@/components/Notification/Notification';
+
 
 //Firebase & Auth
 import { useRouter } from 'expo-router';
@@ -16,8 +16,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { auth } from '../../config/firebase';
 import TopBarComponent from '@/components/TopBarComponent';
 import { Ionicons } from '@expo/vector-icons';
+import { Colors } from '@/constants/Colors';
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
     mainContainer: {
         flexDirection: 'column',
         justifyContent: 'space-between',
@@ -50,13 +51,13 @@ const styles = StyleSheet.create({
         padding: 12,
       },
       courseDone: {
-        color: Colors.teal.default,
+        color: colors.colors.teal,
       },
       courseNotDone: {
-        color: Colors.deepOrange.default,
+        color: colors.colors.deepOrange,
       },
       noInfo: {
-        color: Colors.text.secondaryDark || '#7f8c8d',
+        color: colors.text.secondary,
         fontSize: 16,
         textAlign: 'center',
       },
@@ -65,7 +66,9 @@ const styles = StyleSheet.create({
 export default function TeacherProfile(){
     const [user, setUser] = useState<any>();
     const [coursesArray, setCoursesArray] = useState<boolean[]>([]);
-    const { colors, isDark } = useTheme();
+    const { colors } = useTheme();
+    const styles = getStyles(colors);
+    
     const router = useRouter();
     const [isNotificationVisible, setIsNotificationVisible] = useState(false);
     const [notificationCount, setNotificationCount] = useState(0);
@@ -114,14 +117,14 @@ export default function TeacherProfile(){
                         <NotificationIcon />
                     </TouchableOpacity>
                 }
-                rightIcon={<Ionicons onPress={() => router.push('/screens/Settings/Settings')} name="settings-outline" size={26} color={colors.text} />}
+                rightIcon={<Ionicons onPress={() => router.push('/screens/Settings/Settings')} name="settings-outline" size={26} color={colors.text.primary} />}
             />
 
             <View style={styles.mainContainer}>
                 <View style={styles.profileContainer}>
                     <Image source={{ uri: user?.profilePictureURL?? "" }} style={{ width: 160, height: 160, borderRadius: 100, marginBottom: 4 }} />
                     <TextComponent weight='bold'>{user?.name ?? "Carregando..."}</TextComponent>
-                    <TextComponent weight='bold' size='small' color={Colors.text.secondaryDark}>Professor</TextComponent>
+                    <TextComponent weight='bold' size='small' color={colors.text.secondary}>Professor</TextComponent>
                 </View>
 
                 
@@ -131,7 +134,7 @@ export default function TeacherProfile(){
                         <View
                         style={[
                             styles.courseContainer,
-                            { backgroundColor: colors.cardBackground }
+                            { backgroundColor: colors.cards.primary }
                         ]}
                         >
                         {coursesArray.every(course => course) ? (
@@ -166,7 +169,7 @@ export default function TeacherProfile(){
                         <TextComponent 
                             weight='bold' 
                             size='medium' 
-                            style={{ color: colors.secondaryText }}
+                            style={{ color: colors.text.secondary }}
                         >
                             Sem informação disponível
                         </TextComponent>
@@ -176,7 +179,7 @@ export default function TeacherProfile(){
                 <View style={styles.actionContainer}>
                     <TextComponent weight="bold" size="medium">Recuperar Senha</TextComponent>
                     <TouchableOpacity onPress={handleLogout}>
-                        <TextComponent color={Colors.deepOrange.default} weight="bold" size="medium">
+                        <TextComponent color={colors.colors.deepOrange} weight="bold" size="medium">
                             Sair
                         </TextComponent>
                     </TouchableOpacity>

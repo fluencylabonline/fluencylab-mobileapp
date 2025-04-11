@@ -1,16 +1,16 @@
-import React, { useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
+import React from 'react';
+import { StyleSheet } from 'react-native';
 import Lottie from 'lottie-react-native';
 import Container from '../ContainerComponent';
 
-const SplashScreenAnimation = () => {
+const LoadingScreen = () => {
 
   return (
     <Container style={styles.container}>
       <Lottie
         source={require('../../assets/animations/animation.json')} // Load the local file
-        autoPlay
-        loop={false}
+        autoPlay={true}
+        loop={true}
         style={styles.animation}
       />
     </Container>
@@ -29,4 +29,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SplashScreenAnimation;
+export default LoadingScreen;

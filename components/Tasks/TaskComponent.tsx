@@ -148,13 +148,13 @@ const TasksComponent: React.FC<TasksComponentProps> = ({ studentID, onClose }) =
         if (index === -1) onClose();
       }}
       enablePanDownToClose={true}
-      handleIndicatorStyle={{ backgroundColor: colors.colors.teal, width: 70, height: 5, borderRadius: 2.5 }}
+      handleIndicatorStyle={{ backgroundColor: colors.colors.tealLight, width: 70, height: 5, borderRadius: 2.5 }}
       backgroundStyle={{
         ...styles.bottomSheetShadow,
         backgroundColor: colors.bottomSheet.background
       }}
     >
-      <TextComponent weight="bold" size="large" color={colors.colors.teal} style={styles.dayTitle}>
+      <TextComponent weight="bold" size="large" style={[styles.dayTitle, {color: colors.colors.tealLight}]}>
         Tarefas
       </TextComponent>
 
@@ -164,7 +164,7 @@ const TasksComponent: React.FC<TasksComponentProps> = ({ studentID, onClose }) =
         value={newTask}
         onChangeText={setNewTask}
         onSubmitEditing={handleAddTask}
-        button={<Ionicons onPress={handleAddTask} name="add" size={28} color={colors.colors.teal} />}
+        button={<Ionicons onPress={handleAddTask} name="add" size={28} color={colors.colors.tealLight} />}
       />
 
       {/* Task List */}
@@ -182,13 +182,13 @@ const TasksComponent: React.FC<TasksComponentProps> = ({ studentID, onClose }) =
                   activeOpacity={0.7}
                 >
                   <View style={[styles.checkBox, task.done && styles.checkBoxDone]}>
-                    {task.done && <Ionicons name="checkmark" size={18} color="#fff" />}
+                    {task.done && <Ionicons name="checkmark" size={18} color={colors.colors.white} />}
                   </View>
                   <TextComponent
-                    weight="regular"
+                    weight="bold"
                     style={[
                       styles.taskText,
-                      { color: colors.text.primary },
+                      { color: colors.colors.white },
                       task.done && styles.taskTextDone,
                     ]}
                   >
@@ -293,14 +293,14 @@ const getStyles = (colors: any) => StyleSheet.create({
     height: 24,
     borderRadius: 5,
     borderWidth: 2,
-    borderColor: colors.colors.teal, // Use a theme color for border
+    borderColor: colors.colors.tealLight, // Use a theme color for border
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'transparent',
   },
   checkBoxDone: {
-    backgroundColor: colors.colors.teal,
-    borderColor: colors.colors.teal,
+    backgroundColor: colors.colors.tealLight,
+    borderColor: colors.colors.tealLight,
   },
   checkMark: { // Style for the checkmark text inside the box (removed in favor of Icon)
     // fontSize: 14,

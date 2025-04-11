@@ -143,7 +143,7 @@ export default function Index(){
                           <View
                               style={[
                               styles.statusBadge,
-                              { backgroundColor: item.status === 'online' ? colors.colors.teal : colors.colors.deepOrange },
+                              { backgroundColor: item.status === 'online' ? colors.colors.tealLight : colors.colors.deepOrange },
                           ]}
                           />
                       </View>

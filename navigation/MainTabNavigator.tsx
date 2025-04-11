@@ -12,8 +12,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import TeacherDashboard from '@/app/teacher/home';
 import TeacherProfile from '@/app/teacher/profile';
 
-import StudentDashboard from '@/app/student/StudentDashboard';
-import StudentProfile from '@/app/student/StudentProfile';
+import home from '@/app/student/home';
+import StudentProfile from '@/app/student/profile';
 
 import AdminDashboard from '@/app/admin/AdminDashboard';
 import AdminProfile from '@/app/admin/AdminProfile';
@@ -24,85 +24,11 @@ import { useTheme } from '@/constants/useTheme';
 const Tab = createBottomTabNavigator();
 
 const TeacherTabNavigator = () => {
-
-  // Define colors based on the theme
-  const { colors } = useTheme();
-  const tabBackground = colors.cards.primary;
-  const tabBarBackground = colors.cards.primary;
-  const activeCircleColor = colors.cards.primary;
-
-  return (
-    <View style={[styles.tabContainer, { backgroundColor: tabBarBackground }]}>
-      <Tab.Navigator
-        screenOptions={({ route }) => ({
-          headerShown: false,
-          tabBarStyle: {
-            backgroundColor: tabBackground,
-            borderTopWidth: 0,
-            height: 75,
-            borderTopLeftRadius: 22,
-            borderTopRightRadius: 22,
-            overflow: 'hidden',
-          },
-          tabBarItemStyle: {
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexDirection: 'row',
-          },
-          tabBarShowLabel: false,
-          tabBarIcon: ({ focused }) => {
-            let icon;
-            if (route.name === 'Home') {
-              icon = <NotebookIcon />;
-            } else if (route.name === 'Practice') {
-              icon = <PracticeIcon />;
-            } else if (route.name === 'Chat') {
-              icon = <ChatIcon />;
-            } else if (route.name === 'Calendar') {
-              icon = <CalendarIcon />;
-            } else if (route.name === 'Profile') {
-              icon = <ProfileIcon />;
-            }
-            
-            return focused ? (
-              <View style={[styles.activeCircle, { backgroundColor: activeCircleColor }]}>
-                {icon}
-              </View>
-            ) : (
-              icon
-            );
-          },
-        })}
-      >
-        <Tab.Screen name="Home" component={TeacherDashboard} />
-        <Tab.Screen name="Practice" component={TeacherProfile} />
-        <Tab.Screen name="Chat" component={TeacherProfile} />
-        <Tab.Screen name="Calendar" component={TeacherProfile} />
-        <Tab.Screen name="Profile" component={TeacherProfile} />
-      </Tab.Navigator>
-    </View>
-  );
-};
-
-const styles = StyleSheet.create({
-  tabContainer: {
-    flex: 1,
-  },
-  activeCircle: {
-    width: 55,
-    height: 55,
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});
-
-const StudentTabNavigator = () => {
   return (
     <Tab.Navigator>
       <Tab.Screen
-        name="Profile"
-        component={StudentDashboard}
+        name="Home"
+        component={TeacherDashboard}
         options={{
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home-outline" size={size} color={color} />
@@ -110,7 +36,31 @@ const StudentTabNavigator = () => {
         }}
       />
       <Tab.Screen
-        name="Other"
+        name="Profile"
+        component={TeacherProfile}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person-outline" size={size} color={color} />
+          ),
+        }}
+      />
+    </Tab.Navigator>
+  );
+};
+const StudentTabNavigator = () => {
+  return (
+    <Tab.Navigator>
+      <Tab.Screen
+        name="Home"
+        component={home}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Profile"
         component={StudentProfile}
         options={{
           tabBarIcon: ({ color, size }) => (

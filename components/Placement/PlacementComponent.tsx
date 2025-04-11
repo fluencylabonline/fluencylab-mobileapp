@@ -318,7 +318,7 @@ const PlacementComponent: React.FC<PlacementComponentProps> = ({
 
   const notebookItemStyle = {
     ...styles.testItem,
-    backgroundColor: colors.cards.secondary,
+    backgroundColor: colors.background.list,
   };
 
   // Busca informações do usuário (para obter o NivelamentoPermitido)
@@ -418,8 +418,8 @@ const PlacementComponent: React.FC<PlacementComponentProps> = ({
               backgroundColor: item.completed
                 ? colors.colors.teal
                 : isCurrentTest
-                ? 'yellow'
-                : 'red',
+                ? colors.colors.amber
+                : colors.colors.deepOrange,
             },
           ]}
         >
@@ -453,7 +453,7 @@ const PlacementComponent: React.FC<PlacementComponentProps> = ({
       <BottomSheetView style={styles.container}>
         {viewMode === 'list' ? (
           <>
-            <TextComponent weight="bold" size="large" color={colors.colors.amber} style={styles.title}> 
+            <TextComponent weight="bold" size="large" style={[styles.title, {color: colors.colors.amber}]}> 
               Nivelamento
             </TextComponent>
             {loading ? (
@@ -467,7 +467,7 @@ const PlacementComponent: React.FC<PlacementComponentProps> = ({
                   contentContainerStyle={{
                     flexGrow: 1,
                     paddingBottom: 16,
-                    backgroundColor: colors.background.list,
+                    backgroundColor: colors.bottomSheet.background,
                   }}
                 />
                 <View style={styles.buttonContainer}>

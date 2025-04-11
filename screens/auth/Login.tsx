@@ -117,10 +117,10 @@ const Login: React.FC<LoginPageProps> = ({ navigation }) => {
                 router.replace('/teacher/profile')
                 break;
               case 'student':
-                navigation.navigate('StudentArea');
+                router.navigate('/student/profile');
                 break;
               case 'admin':
-                navigation.navigate('AdminArea');
+                router.navigate('/admin/AdminDashboard');
                 break;
               default:
                 console.error('Invalid user role');
@@ -178,7 +178,7 @@ const Login: React.FC<LoginPageProps> = ({ navigation }) => {
             style={styles.contentContainer}
         >
         <TouchableOpacity onPress={goBack} style={{ position: 'absolute', top: 82, left: 12 }}>
-          <Ionicons color={colors.colors.indigo} name='arrow-back' size={32} />
+          <Ionicons color={colors.text.primary} name='arrow-back' size={32} />
         </TouchableOpacity>
         
         <View>

@@ -42,6 +42,9 @@ import QuizTimer from '@/app/screens/Games/Quiz/QuizTimer';
 
 // Icons
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import TopBarComponent from "@/components/TopBarComponent";
+import LoadingComponent from "@/components/Animation/Loading";
 
 // --- Interfaces ---
 interface Option { option: string; isCorrect: boolean; }
@@ -57,7 +60,6 @@ interface UserData {
     professorId?: string;
     name?: string;
 }
-
 
 // --- Component ---
 const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navigation, onClose }) => {
@@ -278,39 +280,6 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
        }
    }, []); // No dependencies needed if it only uses setters
 
-  // --- Other Logic Functions --- (Delete/Assign Task)
-  const handleDeleteDeck = useCallback((deckId: string, deckTitle: string) => {
-    Alert.alert(
-      "Confirmar Exclusão",
-      `Tem certeza que deseja deletar o deck "${deckTitle}"? Esta ação não pode ser desfeita.`,
-      [
-          { text: "Cancelar", style: "cancel" },
-          {
-              text: "Deletar", style: "destructive", onPress: async () => {
-                  if (!isMountedRef.current) return;
-                  console.log(`Log: Tentando deletar deck ${deckId}`);
-                  try {
-                      setIsLoadingData(true); // Indicate loading during deletion
-                      const deckRef = doc(db, 'Quizzes', deckId);
-                      await deleteDoc(deckRef);
-                      if (isMountedRef.current) {
-                          setDecks(prevDecks => prevDecks.filter(deck => deck.id !== deckId));
-                          Alert.alert("Sucesso", `Deck "${deckTitle}" deletado.`);
-                          console.log(`Log: Deck ${deckId} deletado com sucesso.`);
-                      }
-                  } catch (error) {
-                      console.error("Error deleting deck:", error);
-                      if (isMountedRef.current) {
-                        Alert.alert("Erro", "Não foi possível deletar o deck.");
-                      }
-                  } finally {
-                     if (isMountedRef.current) setIsLoadingData(false);
-                  }
-              }
-          }
-      ]
-    );
-  }, []); // Empty dependency array as it only uses setters and arguments
 
   const handleAddDeckAsTask = useCallback(async () => {
     if (!selectedStudentId || !selectedDeck || !isMountedRef.current) {
@@ -397,7 +366,7 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
 
     setUserAnswer(selectedOption); // Mark answer as selected
     setFeedback(isCorrect ? "Correto!" : `Errado! Resposta: ${correctOption?.option || 'N/A'}`);
-    setFeedbackColor(isCorrect ? colors.colors.teal : colors.colors.deepOrange);
+    setFeedbackColor(isCorrect ? colors.colors.black : colors.colors.black);
     if (isCorrect) setScore((prevScore) => prevScore + 1);
 
     setShowNextButton(true); // *** ADDED: Show the Next button ***
@@ -418,7 +387,7 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
 
    // Memoized Render Deck Item
    const renderDeckItem = useCallback(({ item }: { item: Deck }) => (
-       <View style={[styles.deckItemContainer, { backgroundColor: colors.cards.primary, borderColor: colors.text.secondary || colors.colors.black }]}>
+       <View style={[styles.deckItemContainer, { backgroundColor: colors.background.list, borderColor: colors.background.listSecondary || colors.colors.black }]}>
            <TouchableOpacity onPress={() => openPlayQuiz(item)} style={styles.deckTouchable} disabled={!item.questions || item.questions.length === 0}>
                <View style={styles.deckInfo}>
                    <Ionicons name="layers-outline" size={24} color={(!item.questions || item.questions.length === 0) ? colors.text.secondary : colors.text.primary} />
@@ -427,24 +396,14 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
                {(!item.questions || item.questions.length === 0) && <TextComponent style={styles.noQuestionsText}>(Vazio)</TextComponent>}
                <TextComponent style={[styles.deckScoreText, { color: colors.text.secondary }]}>Pontos: {userScores[item.deckTitle] ?? 'N/A'}</TextComponent>
            </TouchableOpacity>
-           {userRole === 'teacher' && (
-               <View style={styles.teacherActions}>
-                   <TouchableOpacity onPress={() => { if (isMountedRef.current) { setSelectedDeck(item); setIsStudentModalVisible(true); } }} disabled={!item.questions || item.questions.length === 0}>
-                       <Ionicons name="person-add-outline" size={26} color={(!item.questions || item.questions.length === 0) ? colors.text.secondary : colors.colors.indigo} style={styles.iconStyle} />
-                   </TouchableOpacity>
-                   <TouchableOpacity onPress={() => handleDeleteDeck(item.id, item.deckTitle)}>
-                        <Ionicons name="trash-outline" size={26} color={colors.colors.deepOrange} style={styles.iconStyle} />
-                   </TouchableOpacity>
-               </View>
-           )}
        </View>
-   ), [colors.cards.primary, colors.text.secondary, colors.text.primary, userScores, userRole, openPlayQuiz, handleDeleteDeck]); // Memoization deps
+   ), [colors.cards.primary, colors.text.secondary, colors.text.primary, userScores, userRole, openPlayQuiz]); // Memoization deps
 
 
     // Memoized Render Option Item for Quiz Play
     const renderPlayOption = useCallback(({ item }: { item: Option }) => {
         const isSelected = userAnswer === item.option;
-        let dynamicBackgroundColor = colors.cards.primary;
+        let dynamicBackgroundColor = colors.background.list;
         let iconName: keyof typeof Ionicons.glyphMap | null = "ellipse-outline";
         let iconColor = colors.text.secondary;
         let textColor = colors.text.primary;
@@ -452,21 +411,21 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
 
         if (hasAnswered) { // Feedback phase
             if (item.isCorrect) {
-                dynamicBackgroundColor = colors.colors.teal; iconName = "checkmark-circle"; // Solid checkmark
-                iconColor = colors.colors.teal; textColor = colors.colors.teal;
+                dynamicBackgroundColor = colors.colors.tealLight; iconName = "checkmark-circle"; // Solid checkmark
+                iconColor = colors.colors.white; textColor = colors.colors.white;
             } else if (isSelected) { // Incorrectly selected
-                dynamicBackgroundColor = colors.colors.deepOrange; iconName = "close-circle"; // Solid X
-                iconColor = colors.colors.deepOrange; textColor = colors.colors.deepOrange;
+                dynamicBackgroundColor = colors.colors.deepOrangeLight; iconName = "close-circle"; // Solid X
+                iconColor = colors.colors.white; textColor = colors.colors.white;
             } else { // Incorrect, not selected
                  dynamicBackgroundColor = colors.cards.primary; iconName = "ellipse-outline"; // Faded/disabled look
-                iconColor = colors.text.secondary; textColor = colors.text.secondary;
+                iconColor = colors.text.secondary; textColor = colors.colors.white;
             }
         } else { // Selection phase (no answer yet)
              // Style for selectable options (could add hover effect if needed)
              dynamicBackgroundColor = colors.cards.primary; // Default background
              iconName = "ellipse-outline";
-             iconColor = colors.text.primary; // Use primary text color for selection icons
-             textColor = colors.text.primary;
+             iconColor = colors.background.list; // Use primary text color for selection icons
+             textColor = colors.colors.white;
         }
 
         return (
@@ -500,8 +459,7 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
   if (isLoadingAuth) {
       return (
           <Container style={styles.centered}>
-              <ActivityIndicator size="large" color={colors.text.primary} />
-              <TextComponent style={{color: colors.text.primary, marginTop: 10}}>Verificando autenticação...</TextComponent>
+            <LoadingComponent />    
           </Container>
       );
   }
@@ -509,16 +467,19 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
   return (
     <DismissKeyboard>
     <Container>
-        <View style={[styles.header, {borderBottomColor: colors.text.secondary || colors.colors.black}]}>
-            <InputComponent
-                placeholder="Procurar por deck..."
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                style={styles.searchInput}
-                placeholderTextColor={colors.text.secondary}
-            />
-        </View>
 
+        <TopBarComponent
+            title="Quiz"
+            leftIcon={<Ionicons name="arrow-back-outline" size={24} color={colors.text.primary} onPress={() => router.back()} />}
+        />  
+        
+        <InputComponent
+            placeholder="Procurar por deck..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholderTextColor={colors.text.secondary}
+        />
+        
         {/* Show loading indicator specifically when fetching decks initially */}
         {isLoadingData && decks.length === 0 && !searchQuery && (
              <ActivityIndicator size="large" color={colors.text.primary} style={styles.loadingIndicator} />
@@ -531,7 +492,7 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
             style={styles.deckList}
             ListEmptyComponent={
                 !isLoadingData ? ( // Only show "No decks" if not loading
-                    <TextComponent style={[styles.emptyListText, {color: colors.text.secondary}]}>
+                    <TextComponent style={[styles.emptyListText, {color: colors.background.list}]}>
                         {searchQuery ? 'Nenhum deck encontrado.' : 'Nenhum quiz disponível.'}
                     </TextComponent>
                 ) : null
@@ -540,9 +501,6 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
             keyboardShouldPersistTaps="handled" // Keep keyboard open if needed after tap
         />
 
-        {/* --- Modals --- */}
-
-        {/* Play Quiz Modal */}
          <Modal
              visible={isPlayModalVisible}
              animationType="fade"
@@ -602,12 +560,13 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
                                            <ActivityIndicator color={colors.text.primary} style={{marginTop: 20}}/>
                                        )}
 
-                                       {/* Feedback shown only after answering */}
+                                       {/* Feedback shown only after answering 
                                        {userAnswer !== null && (
                                             <View style={[styles.feedbackBox, { backgroundColor: feedbackColor || 'transparent' }]}>
                                                  {feedback ? <TextComponent weight="bold" style={styles.feedbackText}>{feedback}</TextComponent> : null}
                                              </View>
                                        )}
+                                        */}
 
                                        {/* *** ADDED: Conditional Next Button *** */}
                                        {showNextButton && (
@@ -704,7 +663,6 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
   );
 };
 
-// --- Styles --- (Keep existing styles, but ensure consistency and add any minor adjustments needed)
 const { width: screenWidth, height: screenHeight} = Dimensions.get('window');
 const modalMaxWidth = 500; // Max width for modals on larger screens
 
@@ -712,7 +670,7 @@ const getStyles = (colors: any) => StyleSheet.create({
     centered: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
     header: { flexDirection: 'row', paddingHorizontal: 15, paddingVertical: 10, alignItems: 'center', borderBottomWidth: 1, gap: 10, /* borderColor set in component */ },
     searchInput: { flex: 1, height: 45 },
-    deckList: { flex: 1, width: '100%' },
+    deckList: { flex: 1, width: '100%', marginTop: 30 },
     deckItemContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 15, marginVertical: 5, marginHorizontal: 10, borderRadius: 8, borderWidth: 1, elevation: 1, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 1.5, /* bgColor/borderColor set in component */ },
     deckTouchable: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginRight: 10 },
     deckInfo: { flexDirection: 'row', alignItems: 'center', flexShrink: 1, marginRight: 8, gap: 10 },

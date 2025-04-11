@@ -15,7 +15,7 @@ import {
 interface ButtonProps {
   title: any;
   onPress: () => void;
-  color?: 'indigo' | 'amber' | 'teal' | 'spaceBlue' | 'deepOrange';
+  color?: 'indigo' | 'amber' | 'teal' | 'spaceBlue' | 'deepOrange' | 'deepOrangeLight' | 'tealLight';
   style?: StyleProp<ViewStyle>;
   textStyle?: StyleProp<TextStyle>;
   iconName?: keyof typeof Ionicons.glyphMap;
@@ -57,7 +57,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
     >
       <View style={styles.content}>
         {iconName && <Ionicons name={iconName} size={iconSize} color={iconColor} />}
-        <Text style={[styles.text, textStyle, {color: colors.text.primary}]}>{title}</Text>
+        <Text style={[styles.text, textStyle, {color: colors.colors.white}]}>{title}</Text>
       </View>
     </TouchableOpacity>
   );

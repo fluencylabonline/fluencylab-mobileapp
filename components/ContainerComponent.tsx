@@ -8,9 +8,7 @@ import {
 } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-// Define a tap gesture handler
-const tapGesture = Gesture.Tap().onEnd(() => {
-});
+const tapGesture = Gesture.Tap().onEnd(() => {});
 
 interface ContainerProps {
   children: React.ReactNode;

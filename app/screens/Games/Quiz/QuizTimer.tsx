@@ -87,9 +87,9 @@ const QuizTimer: React.FC<QuizTimerProps> = ({
                 {/* Ensure progress is between 0 and 100 */}
                 <View style={[styles.timerBar, { width: `${Math.min(100, Math.max(0, progress))}%` }]} />
             </View>
-            <TextComponent style={[styles.timerText, { color: colors.text.secondary }]}>
+            {/*<TextComponent style={[styles.timerText, { color: colors.text.secondary }]}>
                 {displayTime}s
-            </TextComponent>
+            </TextComponent>*/}
         </View>
     );
 };
@@ -110,7 +110,7 @@ const getStyles = (colors: any) => StyleSheet.create({
      },
      timerBar: {
          height: '100%',
-         backgroundColor: colors.colors.teal, // Use a distinct color for progress
+         backgroundColor: colors.colors.tealLight, // Use a distinct color for progress
          borderRadius: 4,
      },
      timerText: {

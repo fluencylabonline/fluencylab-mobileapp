@@ -164,7 +164,7 @@ const Landing: React.FC<LandingPageProps> = ({ navigation }) => {
             }}
          >
             <TouchableOpacity style={styles.buttonContainer} onPress={() => navigation.navigate('Login')}>
-                <TextComponent weight='bold' size='large' style={[{color: 'black'}]}>
+                <TextComponent weight='bold' size='large' style={[{color: colors.colors.white}]}>
                     Já tenho conta 😎
                 </TextComponent>
             </TouchableOpacity>
@@ -190,9 +190,9 @@ const Landing: React.FC<LandingPageProps> = ({ navigation }) => {
           enablePanDownToClose={false}
           index={0}
           handleIndicatorStyle={{
-            backgroundColor: colors.colors.spaceBlue,
+            backgroundColor: colors.colors.white,
             width: snapIndex === 0 ? 70 : 100,
-            height: 5,
+            height: 7,
             borderRadius: 2.5,
             marginTop: 10,
           }}
@@ -241,7 +241,8 @@ const Landing: React.FC<LandingPageProps> = ({ navigation }) => {
                     onPress={handleSubmit}
                     title='Agendar uma aula grátis'
                 />
-                <Text
+                <TextComponent
+                  weight='bold'
                   style={{
                     color: colors.text.secondary,
                     fontSize: 15,
@@ -250,7 +251,7 @@ const Landing: React.FC<LandingPageProps> = ({ navigation }) => {
                   }}
                 >
                   Como funciona a FluencyLab?
-                </Text>
+                </TextComponent>
               </Animated.View>
             )}
           </BottomSheetView>
@@ -277,7 +278,7 @@ const getStyles = (colors: any) => StyleSheet.create({
     top: 150,
     alignSelf: 'center',
     textAlign: 'center',
-    backgroundColor: '#E6E6F8',
+    backgroundColor: colors.bottomSheet.background,
     borderRadius: 26,
     paddingVertical: 15,
     paddingHorizontal: 30,

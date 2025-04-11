@@ -26,6 +26,7 @@ import Container from '@/components/ContainerComponent';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/constants/useTheme';
 import { router } from 'expo-router';
+import { TextComponent } from '@/components/TextComponent';
 // --- Constants ---
 const { width } = Dimensions.get('window');
 const WORD_LENGTH = 5; // Standard Wordle length
@@ -215,9 +216,9 @@ const Wordle = () => {
         const wordLetters = wordToCompare.split('');
 
         // Define theme-aware colors (using fixed standard Wordle colors here)
-        const correctColor = '#6AAA64'; // Green
-        const presentColor = '#C9B458'; // Yellow
-        const absentColor = colors.text.primary; // Dark/Light Gray
+        const correctColor = colors.colors.tealLight; // Green
+        const presentColor = colors.colors.amber; // Yellow
+        const absentColor = colors.colors.darkGray; // Dark/Light Gray
 
         guess.forEach((letter) => {
             if (!letter) return;
@@ -343,9 +344,9 @@ const Wordle = () => {
         const isCurrentRow = row === currentRow;
 
         // Default styles based on theme
-        let tileBgColor = colors.cards.primary;
-        let tileBorderColor = colors.text.primary; // Use absent color for border
-        let textColor = colors.text.primary;
+        let tileBgColor = colors.colors.gray;
+        let tileBorderColor = colors.colors.gray; // Use absent color for border
+        let textColor = colors.colors.white;
 
         if (isEvaluated && letter) {
              // Use normalizedWord (accent-free, uppercase) for comparison
@@ -353,28 +354,26 @@ const Wordle = () => {
             const correctLetter = wordToCompare[index];
 
             if (correctLetter === letter) {
-                tileBgColor = '#6AAA64'; // Green
-                tileBorderColor = '#6AAA64';
-                textColor = '#ffffff';
+                tileBgColor = colors.colors.tealLight; // Green
+                tileBorderColor = colors.colors.tealLight;
+                textColor = colors.colors.white;
             } else if (wordToCompare.includes(letter)) {
-                tileBgColor = '#C9B458'; // Yellow
-                tileBorderColor = '#C9B458';
-                textColor = '#ffffff';
+                tileBgColor = colors.colors.amber; // Yellow
+                tileBorderColor = colors.colors.amber;
+                textColor = colors.colors.white;
             } else {
-                tileBgColor = colors.text.primary; // Gray (Absent)
-                tileBorderColor = colors.text.primary;
-                textColor = '#ffffff';
+                tileBgColor = colors.colors.darkGray; // Gray (Absent)
+                tileBorderColor = colors.colors.darkGray;
+                textColor = colors.colors.white;
             }
         } else if (isCurrentRow && letter) {
             // Tile in current row being typed
-            tileBorderColor = colors.colors.indigo; // Slightly lighter gray border
+            tileBorderColor = colors.colors.gray; // Slightly lighter gray border
         } else if (!isCurrentRow && !letter) {
              // Keep default empty style for rows above current with no letter
-             tileBorderColor = colors.text.primary;
+             tileBorderColor = colors.colors.gray;
         }
 
-
-        // Add subtle indication for the current typing position (optional)
         const currentTileStyle = isCurrentRow && index === currentTileIndex && !gameOver
             ? styles.currentTileIndicator
             : {};
@@ -426,12 +425,11 @@ const Wordle = () => {
                      title="Wordle"
                      leftIcon={<Ionicons onPress={handleGoBack} name="arrow-back" size={28} color={colors.text.primary} />}
                      rightIcon={<Ionicons onPress={handleChangeLanguage} name="language" size={28} color={colors.text.primary} />}
-                     // Pass other theme-related props if needed by TopBarComponent
                  />
-<View style={styles.languageIndicator}>
-                <Text style={styles.languageText}>
+            <View style={styles.languageIndicator}>
+                <TextComponent weight="bold" size="small" style={styles.languageText}>
                     {language === 'en' ? 'English' : 'Português'}
-                </Text>
+                </TextComponent>
             </View>
                 <View style={styles.gameArea}>
                     <View style={styles.rowsContainer}>
@@ -440,9 +438,9 @@ const Wordle = () => {
 
                     {gameOver && (
                         <View style={styles.resultContainer}>
-                            <Text style={[styles.resultMessage, { color: colors.text.primary }]}>{resultMessage}</Text>
+                            <TextComponent weight="bold" size="medium" style={[styles.resultMessage, { color: colors.text.secondary }]}>{resultMessage}</TextComponent>
                             <TouchableOpacity style={styles.playAgainButton} onPress={handlePlayAgain}>
-                                <Text style={styles.playAgainText}>Jogar Novamente</Text>
+                                <TextComponent weight="bold" size="medium" style={styles.playAgainText}>Jogar Novamente</TextComponent>
                             </TouchableOpacity>
                         </View>
                     )}
@@ -461,10 +459,6 @@ const Wordle = () => {
     );
 };
 
-// --- Styles ---
-// Using isDark inside the component now, so getStyles is not needed here.
-// Add/adjust styles based on isDark where necessary.
-// Keeping the styles structure for clarity.
 const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   container: {
         flex: 1,
@@ -497,10 +491,7 @@ const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
         borderRadius: 4,
     },
     currentTileIndicator: {
-        // Example: subtle animation or border change for the current input tile
-        // Using borderColor approach:
-        // borderColor: Colors.amber.default ?? '#FFAE00', // Use a distinct color
-        // Or maybe scale? Requires Animated API
+        borderColor: colors.colors.white,
     },
     tileText: {
         fontSize: Math.min(width / 12, 30),
@@ -513,8 +504,6 @@ const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
         padding: 10,
     },
     resultMessage: {
-        fontSize: 16,
-        fontWeight: 'bold',
         textAlign: 'center',
         marginBottom: 16,
     },
@@ -525,9 +514,7 @@ const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
         borderRadius: 8,
     },
     playAgainText: {
-        color: '#FFF',
-        fontWeight: 'bold',
-        fontSize: 16,
+        color: colors.colors.white,
     },
     keyboardWrapper: {
         width: '100%',
@@ -535,15 +522,13 @@ const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     languageIndicator: {
       width: '100%',
       paddingVertical: 8,
-      backgroundColor: colors.cards.secondary,
+      backgroundColor: colors.background.list,
       borderBottomWidth: 1,
-      borderBottomColor: colors.text.primary,
+      borderBottomColor: colors.background.listSecondary,
       alignItems: 'center',
   },
   languageText: {
-      fontSize: 14,
-      fontWeight: '500',
-      color: colors.text.primary,
+      color: colors.colors.white,
   },
 });
 

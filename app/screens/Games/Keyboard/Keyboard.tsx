@@ -1,32 +1,20 @@
-// Keyboard.tsx (or Keyboard.js)
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons'; // Make sure @expo/vector-icons is installed
 import { useTheme } from '@/constants/useTheme';
 const { width: screenWidth } = Dimensions.get('window');
 
-// Keyboard layout configuration
 const KEYBOARD_ROWS = [
     ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
     ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
     ['Z', 'X', 'C', 'V', 'B', 'N', 'M', 'Backspace', 'Enter'],
 ];
 
-// Define the expected props for the Keyboard component
 interface KeyboardProps {
-    /** Function called when a key is pressed. Receives the key string ('Q', 'Enter', 'Backspace', etc.). */
     onKeyPress: (key: string) => void;
-    /** An object mapping keys (e.g., 'A', 'Q') to their desired background color string. */
     keyBackgroundColors: Record<string, string>;
-    /** An optional object mapping keys to their desired text color string. Defaults will be used if not provided. */
     keyTextColors?: Record<string, string>;
 }
-
-/**
- * A reusable Keyboard component for word games like Wordle or Guessly.
- * It displays a standard QWERTY layout and allows dynamic coloring of keys
- * based on game state passed via props.
- */
 const Keyboard: React.FC<KeyboardProps> = ({
     onKeyPress,
     keyBackgroundColors,
@@ -38,9 +26,9 @@ const Keyboard: React.FC<KeyboardProps> = ({
 
     // Define default colors based on the current theme
     // These are used if a specific color isn't provided in keyBackgroundColors/keyTextColors
-    const defaultBgColor = colors.text.primary; // Darker/Lighter Gray
-    const defaultTextColor = colors.text.primary; // White/Near Black
-    const specialKeyBgColor = colors.colors.indigo; // Darker/Lighter Gray for special keys
+    const defaultBgColor = colors.background.listSecondary; // Darker/Lighter Gray
+    const defaultTextColor = colors.colors.white; // White/Near Black
+    const specialKeyBgColor = colors.background.listSecondary; // Darker/Lighter Gray for special keys
 
     return (
         // Container for the entire keyboard
@@ -51,7 +39,6 @@ const Keyboard: React.FC<KeyboardProps> = ({
                     {row.map((key) => {
                         // Determine background color: Use provided color or default based on key type and theme
                         const bgColor = keyBackgroundColors[key] || (key === 'Enter' || key === 'Backspace' ? specialKeyBgColor : defaultBgColor);
-                        // Determine text color: Use provided color or default based on theme
                         const textColor = keyTextColors[key] || defaultTextColor;
 
                         return (
@@ -95,7 +82,7 @@ const getKeyboardStyles = (colors: any) => StyleSheet.create({
         alignItems: 'center', // Center rows horizontally
         paddingVertical: 8, // Vertical padding around the keyboard
         paddingHorizontal: 3, // Horizontal padding around the keyboard
-        backgroundColor: colors.cards.secondary, // Background for the keyboard area
+        backgroundColor: colors.background.list, // Background for the keyboard area
     },
     row: {
         flexDirection: 'row', // Arrange keys horizontally

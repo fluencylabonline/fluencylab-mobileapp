@@ -44,6 +44,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/constants/useTheme";
 import InputComponent from "@/components/InputComponent";
 import ButtonComponent from "@/components/ButtonComponent";
+import { router } from "expo-router";
 
 const geminiApiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY as string;
 const modelName = process.env.EXPO_PUBLIC_GEMINI_MODEL_NAME as string;
@@ -622,7 +623,7 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ onClose }) => {
   };
 
   const handleBack = () => {
-    onClose();
+    router.back();  
   };
 
   return (

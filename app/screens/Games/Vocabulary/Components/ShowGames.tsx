@@ -6,11 +6,11 @@ import {
   ActivityIndicator,
   TouchableOpacity
 } from 'react-native';
-import { db } from '@/config/firebase'; // Adjust path as needed
+import { db } from '@/config/firebase'; 
 import { collection, onSnapshot } from 'firebase/firestore';
 
-import { useTheme } from '@/constants/useTheme'; // Adjust path as needed
-import { useToast } from '@/components/Toast/useToast'; // Adjust path as needed
+import { useTheme } from '@/constants/useTheme'; 
+import { useToast } from '@/components/Toast/useToast'; 
 import { TextComponent } from '@/components/TextComponent';
 import { router } from 'expo-router';
 
@@ -27,15 +27,14 @@ export default function ShowGames() {
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // --- Fetch Games ---
   useEffect(() => {
-    setLoading(true); // Start loading when component mounts or auth changes (if user needed for query)
+    setLoading(true); 
     const unsubscribe = onSnapshot(collection(db, 'VocabularyGame'),
       (snapshot) => {
         const gamesList = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
-        } as Game)); // Cast to Game type
+        } as Game));
         setGames(gamesList);
         setLoading(false);
       },
@@ -45,16 +44,12 @@ export default function ShowGames() {
         setLoading(false);
       }
     );
-    // Cleanup listener on component unmount
     return () => unsubscribe();
-  }, [showToast]); // Dependency on showToast
+  }, [showToast]);
 
-
-  // --- Navigation ---
   const handleNavigateToGame = (game: Game) => {
     const params = {
       gameID: game.id,
-      isSingleplayer: true, // or whatever value you need
       gameData: JSON.stringify(game),
       vocabularyData: JSON.stringify(game.vocabularies)
     };
@@ -63,13 +58,11 @@ export default function ShowGames() {
       .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
       .join('&');
   
-    router.push(`/screens/Games/Vocabulary/IsPlaying/IsPlaying?${queryString}`);
+    router.push(`/screens/Games/Vocabulary/IsPlaying/GamesModes?${queryString}`);
   };
 
-  // --- Render Item for FlatList ---
   const renderGameItem = ({ item }: { item: Game }) => {
     const wordCount = Array.isArray(item.vocabularies) ? item.vocabularies.length : 0;
-
     return (
       <TouchableOpacity
         style={[styles.gameItemContainer, { backgroundColor: colors.cards.primary }]}
@@ -87,17 +80,10 @@ export default function ShowGames() {
     );
   };
 
-
-  // --- Render Component ---
-  // Display loading indicator until both auth check and initial data fetch are done
   const showLoadingIndicator = loading;
 
   return (
     <View style={styles.container}>
-      <TextComponent weight="bold" size="large" style={[styles.title, { color: colors.text.primary }]}>
-         Temas para Jogar Sozinho
-      </TextComponent>
-
       {showLoadingIndicator ? (
          <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={colors.text.primary} />
@@ -113,7 +99,7 @@ export default function ShowGames() {
           contentContainerStyle={styles.listContentContainer}
           ListEmptyComponent={
             <TextComponent style={[styles.emptyText, { color: colors.text.secondary }]}>
-              Nenhum tema de vocabulário encontrado.
+              Nenhum tema encontrado.
             </TextComponent>
           }
         />
@@ -122,20 +108,19 @@ export default function ShowGames() {
   );
 }
 
-// --- Styles ---
 const styles = StyleSheet.create({
   container: {
-    flex: 1, // Make container fill available space if needed within its parent
+    flex: 1, 
     paddingVertical: 15,
-    marginTop: 15, // Add some space above the list
+    marginTop: 15, 
   },
   title: {
     marginBottom: 15,
-    marginHorizontal: 10, // Add some horizontal margin to the title
+    marginHorizontal: 10, 
     textAlign: 'center',
   },
    loadingContainer: {
-       flex: 1, // Center loading indicator in available space
+       flex: 1, 
        justifyContent: 'center',
        alignItems: 'center',
        padding: 20,
@@ -145,8 +130,8 @@ const styles = StyleSheet.create({
      fontSize: 16,
   },
   listContentContainer: {
-    paddingHorizontal: 10, // Padding for the list items
-    paddingBottom: 20, // Padding at the bottom of the list
+    paddingHorizontal: 10, 
+    paddingBottom: 20, 
   },
   gameItemContainer: {
     flexDirection: 'row',
@@ -155,12 +140,11 @@ const styles = StyleSheet.create({
     padding: 15,
     marginHorizontal: 12,
     borderRadius: 8,
-    marginBottom: 8, // Space between items
-    // Add background color from theme if needed: backgroundColor: colors.cardBackgroundSecodary
+    marginBottom: 8,
   },
   gameInfo: {
-    flex: 1, // Allow text content to take up available space
-    marginRight: 10, // Add space between text and delete button
+    flex: 1, 
+    marginRight: 10,
   },
   emptyText: {
     textAlign: 'center',

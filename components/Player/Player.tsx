@@ -436,7 +436,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
                             size={minimal ? 24 : 28} // Smaller icon in minimal mode
                             // Dim icon if disabled
                             color={!soundRef.current || (isLoading && !isPlaying && positionMillis === 0)
-                                ? colors.text.secondary // Use theme disabled color
+                                ? colors.colors.spaceBlue // Use theme disabled color
                                 : colors.colors.spaceBlue // Use theme primary color
                             }
                         />

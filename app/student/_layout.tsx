@@ -5,22 +5,17 @@ import NotebookIcon from '@/assets/icons/NotebookIcon';
 import ProfileIcon from '@/assets/icons/ProfileIcon';
 import PracticeIcon from '@/assets/icons/PracticeIcon';
 import ChatIcon from '@/assets/icons/ChatIcon';
-import CalendarIcon from '@/assets/icons/CalendarIcon';
 
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-
-import TeacherDashboard from '@/app/teacher/home';
-import TeacherProfile from '@/app/teacher/profile';
-
 import { View, StyleSheet } from 'react-native';
 import Practice from './practice';
-import Chat from './chat';
-import Calendar from './calendar';
 import { useTheme } from '@/constants/useTheme';
+import StudentHome from './home';
+import StudentProfile from './profile';
+import Chat from './chat';
 const Tab = createBottomTabNavigator();
 
 const _layout = () => {
-  // Define colors based on the theme
   const { colors } = useTheme();
   const tabBackground = colors.background.list;
   const tabBarBackground = colors.background.primary;
@@ -51,12 +46,10 @@ const _layout = () => {
               icon = <NotebookIcon />;
             } else if (route.name === 'Practice') {
               icon = <PracticeIcon />;
-            } else if (route.name === 'Chat') {
-              icon = <ChatIcon />;
-            } else if (route.name === 'Calendar') {
-              icon = <CalendarIcon />;
             } else if (route.name === 'Profile') {
               icon = <ProfileIcon />;
+            } else if (route.name === 'Chat') {
+              icon = <ChatIcon />;
             }
             
             return focused ? (
@@ -69,11 +62,10 @@ const _layout = () => {
           },
         })}
       >
-        <Tab.Screen name="Home" component={TeacherDashboard} />
+        <Tab.Screen name="Home" component={StudentHome} />
         <Tab.Screen name="Practice" component={Practice} />
+        <Tab.Screen name="Profile" component={StudentProfile} />
         <Tab.Screen name="Chat" component={Chat} />
-        <Tab.Screen name="Calendar" component={Calendar} />
-        <Tab.Screen name="Profile" component={TeacherProfile} />
       </Tab.Navigator>
     </View>
   );

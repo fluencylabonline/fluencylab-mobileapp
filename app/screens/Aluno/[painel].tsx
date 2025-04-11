@@ -15,6 +15,7 @@ import ReportsComponent from "@/components/Report/ReportComponent";
 import PlacementComponent from "@/components/Placement/PlacementComponent";
 import MaterialsComponent from "@/components/Material/MaterialsComponent";
 import { useTheme } from "@/constants/useTheme";
+
 export default function Painel(){
   const { studentID, studentName } = useLocalSearchParams();
   const [activeModal, setActiveModal] = useState<'reports' | 'tasks' | 'placement' | null>(null);
@@ -23,13 +24,13 @@ export default function Painel(){
 
   const cardStyle = {
     ...styles.card,
-    backgroundColor: colors.background.primary,
+    backgroundColor: colors.background.list,
     shadowColor: colors.colors.black,
   };
 
   const subCardContainerStyle = {
     ...styles.subCardContainer,
-    backgroundColor: colors.background.primary,
+    backgroundColor: colors.background.list,
     shadowColor: colors.colors.black,
   };
 
@@ -66,13 +67,13 @@ export default function Painel(){
 
             </View>
 
-          <TouchableOpacity style={cardStyle}>
+          <View style={cardStyle}>
             <ClassStatusCalendar studentID={studentID as string} />
-          </TouchableOpacity>
+          </View>
 
-          <TouchableOpacity style={cardStyle}>
+          <View style={cardStyle}>
             <MaterialsComponent studentID={studentID as string} />
-          </TouchableOpacity>
+          </View>
         </View>
 
       {activeModal === 'reports' && (

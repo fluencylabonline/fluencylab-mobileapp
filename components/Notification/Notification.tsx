@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { db, auth } from '@/config/firebase';
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import { useTheme } from '@/constants/useTheme';
+
   type Notification = {
     id: string;
     content?: string;
@@ -98,13 +99,11 @@ const BottomSheetNotification: React.FC<BottomSheetNotificationProps> = ({ visib
     <BottomSheet
       index={visible ? 0 : -1}
       snapPoints={['70%', '100%']}
-      enablePanDownToClose
-      backgroundStyle={styles.bottomSheetBackground}
-      handleIndicatorStyle={{
-        backgroundColor: colors.colors.indigo,
-        width: 70,
-        height: 5,
-        borderRadius: 2.5,
+      enablePanDownToClose={true}
+      handleIndicatorStyle={{ backgroundColor: colors.colors.white, width: 65 }}
+      backgroundStyle={{
+        ...styles.bottomSheetShadow,
+        backgroundColor: colors.bottomSheet.background,
       }}
     >
       <Text style={styles.sheetTitle}>Notificações</Text>
@@ -150,8 +149,13 @@ const BottomSheetNotification: React.FC<BottomSheetNotificationProps> = ({ visib
 };
 
 const getStyles = (colors: any) => StyleSheet.create({  
-  bottomSheetBackground: {
-    backgroundColor: colors.background.primary,
+  bottomSheetShadow: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 35,
+    borderRadius: 16,
   },
   sheetTitle: {
     fontSize: 18,

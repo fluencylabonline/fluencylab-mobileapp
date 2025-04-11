@@ -40,11 +40,9 @@ export type Report = {
   }
 
   export interface VocabularyItem {
-    vocab: string; // Make sure this matches the actual field name in your data
-    translation?: string; // Optional fields
-    imageURL?: string;   // Optional or required depending on your games
-    // Add any other fields present in your VocabularyGame documents' vocabularies array
-    id?: string; // Often useful if items have unique IDs
+    vocab: string;
+    translation?: string;
+    imageURL?: string;
+    id?: string;
     hint?: string;
-    // ... etc.
   }

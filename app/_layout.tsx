@@ -1,21 +1,35 @@
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { useState, useEffect } from 'react';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from '../config/firebase';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import { ToastProvider } from '@/components/Toast/useToast';
-import { useTheme } from '@/constants/useTheme';
+import { fetchUserData } from '@/hooks/fetchUserData';
 
 export default function RootLayout() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const { colors } = useTheme();
   const router = useRouter();
   const segments = useSegments();
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setIsAuthenticated(!!user);
     });
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async (authUser) => {
+    if (authUser) {
+      const data = await fetchUserData(authUser.uid);
+      if(data.role !== 'teacher') {
+        signOut(auth);
+      }
+      } else {
+        //if the user is not authenticated, sign out
+        signOut(auth);
+    }});
+
     return () => unsubscribe();
   }, []);
 
@@ -34,7 +48,7 @@ export default function RootLayout() {
     return null;
   }
 
-  return (
+return (
     <ToastProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <StatusBar style="dark" translucent={true} />
@@ -54,4 +68,5 @@ export default function RootLayout() {
         </Stack>
       </GestureHandlerRootView>
     </ToastProvider>
-  )}
+  );
+}

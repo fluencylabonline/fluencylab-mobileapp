@@ -211,7 +211,7 @@ const Aulas: React.FC = () => {
         index={-1}
         snapPoints={snapPoints}
         enablePanDownToClose={true}
-        handleIndicatorStyle={{ backgroundColor: colors.colors.indigo, width: 70, height: 5, borderRadius: 2.5 }}
+        handleIndicatorStyle={{ backgroundColor: colors.colors.white, width: 70, height: 5, borderRadius: 2.5 }}
         backgroundStyle={{
             ...styles.bottomSheetShadow,
             backgroundColor: colors.bottomSheet.background,
@@ -226,8 +226,8 @@ const Aulas: React.FC = () => {
             multiline
           />
           <View style={styles.buttonContainer}>
-              <ButtonComponent color='deepOrange' title="Cancelar" onPress={handleCloseReportSheet} />
-              <ButtonComponent color='indigo' title="Salvar" onPress={handleSaveReport} />
+              <ButtonComponent color='deepOrangeLight' title="Cancelar" onPress={handleCloseReportSheet} />
+              <ButtonComponent color='tealLight' title="Salvar" onPress={handleSaveReport} />
           </View>
         </BottomSheetView>
       </BottomSheet>

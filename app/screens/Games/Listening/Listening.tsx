@@ -23,7 +23,7 @@ import { TextComponent } from '@/components/TextComponent';
 import { useTheme } from '@/constants/useTheme';
 import InputComponent from '@/components/InputComponent';
 import Loading from '@/components/Animation/Loading';
-
+import { router } from 'expo-router';
 interface WordInput {
     word: string;
     isInput: boolean;
@@ -167,7 +167,7 @@ export default function ListeningPractice({ onClose }: ListeningPracticeProps) {
 
     // Update handleBack to use onClose prop
     const handleBack = () => {
-        onClose();
+        router.back();
     };
 
     useEffect(() => {

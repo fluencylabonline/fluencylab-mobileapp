@@ -21,8 +21,7 @@ import Container from '@/components/ContainerComponent';
 import InputComponent from '@/components/InputComponent';
 import ButtonComponent from '@/components/ButtonComponent';
 import BottomSheet, { BottomSheetFlatList, BottomSheetTextInput } from '@gorhom/bottom-sheet';
-import { Colors } from 'react-native/Libraries/NewAppScreen';
-
+import { router } from 'expo-router';
 // Types
 interface Deck {
    id: string; // Represents the document ID (deck name)
@@ -42,11 +41,10 @@ interface Student {
 }
 
 interface FlashcardsProps {
- onClose: () => void;
 }
 
 // Main App Component
-const Flashcards: React.FC<FlashcardsProps> = ({ onClose }) => {
+const Flashcards: React.FC<FlashcardsProps> = ({}) => {
  const { colors } = useTheme();
  const styles = getStyles(colors);
  const { showToast } = useToast();
@@ -114,7 +112,7 @@ const Flashcards: React.FC<FlashcardsProps> = ({ onClose }) => {
 
  // Back handler
  const handleBack = () => {
-   onClose();
+   router.back();
  };
 
  // --- BottomSheet Handlers ---

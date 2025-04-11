@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     View,
     Text,
@@ -8,34 +8,27 @@ import {
     Modal,
     Dimensions,
     ScrollView,
-    KeyboardAvoidingView,
-    Platform,
-    ActivityIndicator,
     Keyboard as RNKeyboard,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useTheme } from '@/constants/useTheme';
 
-// Import the reusable Keyboard component (ensure path is correct)
 import Keyboard from '@/app/screens/Games/Keyboard/Keyboard';
 import TopBarComponent from '@/components/TopBarComponent';
 
-// Import word data - ensure pt file exists with same structure
 import allWordsDataEnglish from './Database/wordsDataEnglish.json'; // Adjust path
 import allWordsDataPortuguese from './Database/wordsDataPorguese.json'; // Adjust path
+import Container from '@/components/ContainerComponent';
+import { router } from 'expo-router';
+import LoadingScreen from '@/components/Animation/Loading';
+import { TextComponent } from '@/components/TextComponent';
+import { useToast } from '@/components/Toast/useToast';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
-// Define Letter Status type
 type LetterStatus = 'correct' | 'present' | 'absent' | 'default';
 
-interface GuesslyGameScreenProps {
-    onClose: () => void;
-}
-
-const GuesslyGameScreen = ({ onClose }: { onClose: () => void }) => { // Assuming navigation prop is passed
-    // --- State ---
-    const [isDarkMode, setIsDarkMode] = useState(true);
+const GuesslyGameScreen = ({}) => {
     const [language, setLanguage] = useState<'en' | 'pt'>('en');
     const [wordDataSets, setWordDataSets] = useState<any[]>([]);
     const [currentSetIndex, setCurrentSetIndex] = useState(0);
@@ -52,55 +45,23 @@ const GuesslyGameScreen = ({ onClose }: { onClose: () => void }) => { // Assumin
     const [timerStarted, setTimerStarted] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [letterStatuses, setLetterStatuses] = useState<Record<string, LetterStatus>>({}); // State for letter statuses
-
+    const { colors } = useTheme();
+    const styles = getStyles(colors);
+    const [keyColors, setKeyColors] = useState<Record<string, string>>({});
+    const { showToast } = useToast();
     const inputRefs = useRef<(TextInput | null)[]>([]);
 
-    // --- Theme Loading/Saving ---
     useEffect(() => {
-        const loadTheme = async () => {
-            setIsLoading(true); // Start loading
-            try {
-                const storedDarkMode = await AsyncStorage.getItem('isGuesslyDarkMode');
-                setIsDarkMode(storedDarkMode ? storedDarkMode === 'true' : true);
-            } catch (e) {
-                console.error("Failed to load theme from AsyncStorage", e);
-                 setIsDarkMode(true); // Default to dark mode on error
-            } finally {
-                 // Don't stop loading here, let data loading finish
-            }
-        };
-        loadTheme();
-    }, []);
-
-    useEffect(() => {
-        // Save theme whenever it changes, but only after initial load is complete
-        if (!isLoading) {
-             const saveTheme = async () => {
-                try {
-                     await AsyncStorage.setItem('isGuesslyDarkMode', isDarkMode.toString());
-                } catch (e) {
-                     console.error("Failed to save theme to AsyncStorage", e);
-                }
-            };
-             saveTheme();
-        }
-    }, [isDarkMode, isLoading]);
-
-
-    // --- Language and Data Loading ---
-    useEffect(() => {
-        console.log(`Loading data for language: ${language}`);
-        setIsLoading(true); // Ensure loading indicator shows during language switch
+        setIsLoading(true);
         const data = language === 'en' ? allWordsDataEnglish : allWordsDataPortuguese;
         if (!data || data.length === 0) {
             console.error(`Word data for language "${language}" is empty or invalid.`);
-            // Handle error appropriately - maybe show a message and prevent game start
              setWordDataSets([]);
              setIsLoading(false);
              setFeedbackMessage(`Erro: Dados de palavras não encontrados para ${language}.`);
              setFeedbackMessageType('error');
-             setGameOver(true); // Prevent game from starting incorrectly
-             return; // Stop processing
+             setGameOver(true);
+             return;
         }
         setWordDataSets(data);
         const newSetIndex = Math.floor(Math.random() * data.length);
@@ -113,16 +74,13 @@ const GuesslyGameScreen = ({ onClose }: { onClose: () => void }) => { // Assumin
         setRemainingAttempts(2);
         setFeedbackMessage('');
         setFeedbackMessageType('');
-        setLetterStatuses({}); // Clear statuses on language change
+        setLetterStatuses({}); 
         setTimerStarted(false);
-        // setShowInstructions(true); // Optionally re-show instructions on lang change
-        setIsLoading(false); // Stop loading AFTER data is processed
+        setShowInstructions(true); 
+        setIsLoading(false);
      }, [language]);
 
-
-    // --- Current Word Setup ---
      useEffect(() => {
-        // This runs when wordDataSets, currentSetIndex, or currentWordIndex changes
         if (!isLoading && wordDataSets.length > 0 && currentSetIndex < wordDataSets.length && wordDataSets[currentSetIndex]) {
             const wordSet = wordDataSets[currentSetIndex];
             if (currentWordIndex < wordSet.length) {
@@ -138,23 +96,19 @@ const GuesslyGameScreen = ({ onClose }: { onClose: () => void }) => { // Assumin
                      setGameOver(true); // End game on invalid data
                  }
             } else {
-                 // Index out of bounds - game likely finished correctly or via skip
                  console.log(`Word index ${currentWordIndex} out of bounds for set ${currentSetIndex}. Game should end.`);
-                 if (!gameOver) { // Ensure gameOver is set if we ran out of words
+                 if (!gameOver) { 
                      setFeedbackMessage('Parabéns! Você completou!');
                      setFeedbackMessageType('correct');
                      setGameOver(true);
                  }
              }
          } else if (!isLoading && wordDataSets.length > 0) {
-             // This might happen if currentSetIndex is invalid somehow after random selection
              console.error("Word data loaded, but currentSetIndex seems invalid:", currentSetIndex);
              setGameOver(true);
          }
     }, [wordDataSets, currentSetIndex, currentWordIndex, isLoading, gameOver]); // Added isLoading and gameOver
 
-
-    // --- Timer ---
     useEffect(() => {
         let timer: NodeJS.Timeout | null = null;
         if (timerStarted && !gameOver && timeLeft > 0) {
@@ -378,10 +332,6 @@ const GuesslyGameScreen = ({ onClose }: { onClose: () => void }) => { // Assumin
     };
 
     const restartGame = () => {
-        console.log("Restarting game...");
-        // Reset state, trigger data reload via language state change (even if same lang)
-        setLanguage(prevLang => prevLang); // Trigger useEffect [language]
-        // Explicitly reset other states not covered by language useEffect
          setCurrentWordIndex(0); // Ensure word index resets
          setGameOver(false);
          setScore(0);
@@ -391,8 +341,7 @@ const GuesslyGameScreen = ({ onClose }: { onClose: () => void }) => { // Assumin
          setFeedbackMessageType('');
          setLetterStatuses({});
          setTimerStarted(false);
-         setShowInstructions(true); // Re-show instructions on restart
-         setIsLoading(true); // Show loading while data reloads
+         setShowInstructions(true);
     };
 
 
@@ -401,47 +350,18 @@ const GuesslyGameScreen = ({ onClose }: { onClose: () => void }) => { // Assumin
         if (isLoading) return; // Prevent changing language while loading
         const nextLang = language === 'en' ? 'pt' : 'en';
         setLanguage(nextLang);
-        // Game state reset happens in useEffect [language]
-         // Maybe show a toast here if you have a toast system setup
-         // showToast(`Idioma alterado para ${nextLang === 'en' ? 'Inglês' : 'Português'}.`, 'info');
+        showToast(`Idioma alterado para ${nextLang === 'en' ? 'Inglês' : 'Português'}.`, 'info');
     };
 
     const handleBack = () => {
-        onClose();
+       router.back();
       };
-
-    // --- Generate keyColors prop for the Keyboard ---
-    const getKeyColors = useCallback(() => {
-        const keyColorMapping = {
-            // Define colors precisely matching Wordle web standards if desired
-            correct: isDarkMode ? '#538d4e' : '#6aaa64', // Green
-            present: isDarkMode ? '#b59f3b' : '#c9b458', // Yellow
-            absent: isDarkMode ? '#3a3a3c' : '#787c7e',  // Gray
-        };
-        const currentKeyColors: Record<string, string> = {};
-
-        Object.keys(letterStatuses).forEach(key => {
-            const status = letterStatuses[key];
-            if (status && status !== 'default') {
-                currentKeyColors[key.toUpperCase()] = keyColorMapping[status];
-            }
-        });
-
-        return currentKeyColors;
-    }, [letterStatuses, isDarkMode]);
-
-
-    // --- Styles & Colors ---
-    const styles = getStyles(isDarkMode);
-    const topBarColor = isDarkMode ? '#FFF' : '#000';
-
 
     // --- Render Loading ---
     if (isLoading) {
         return (
             <View style={styles.centered}>
-                <ActivityIndicator size="large" color={isDarkMode ? Colors.amber.default : Colors.indigo.default} />
-                <Text style={{color: isDarkMode ? '#FFF' : '#000', marginTop: 10}}>Carregando...</Text>
+                <LoadingScreen />
             </View>
         );
     }
@@ -449,23 +369,19 @@ const GuesslyGameScreen = ({ onClose }: { onClose: () => void }) => { // Assumin
 
     return (
         // Use KeyboardAvoidingView to prevent keyboard overlap
-        <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : undefined} // Use "height" on Android if padding not enough
-            style={styles.kbAvoid}
-            keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0} // Adjust offset if needed, especially with custom header
-        >
+        <Container>
              {/* Use Mock or your actual TopBarComponent */}
              <TopBarComponent
                  title="Guessly"
-                 leftIcon={<Ionicons onPress={handleBack} name="arrow-back" size={28} color={topBarColor} />}
-                 rightIcon={<Ionicons onPress={handleChangeLanguage} name="language" size={28} color={topBarColor} />}
+                 leftIcon={<Ionicons onPress={handleBack} name="arrow-back" size={28} color={colors.colors.amber} />}
+                 rightIcon={<Ionicons onPress={handleChangeLanguage} name="language" size={28} color={colors.colors.amber} />}
              />
 
             {/* Language Indicator */}
             <View style={styles.languageIndicator}>
-                <Text style={styles.languageText}>
+                <TextComponent weight="bold" size="small" style={styles.languageText}>
                     {language === 'en' ? 'English' : 'Português'}
-                </Text>
+                </TextComponent>
             </View>
 
             {/* ScrollView for game content if it might exceed screen height */}
@@ -481,9 +397,9 @@ const GuesslyGameScreen = ({ onClose }: { onClose: () => void }) => { // Assumin
                              </Text>
                              <Text style={styles.gameOverScore}>Pontuação Final: {score}</Text>
                              <TouchableOpacity style={styles.restartButton} onPress={restartGame}>
-                                <Text style={styles.restartButtonText}>
+                                <TextComponent weight="bold" size="medium" color="white" style={styles.restartButtonText}>
                                     {score >= (wordDataSets[currentSetIndex]?.length ?? 0) ? 'Jogar Novamente' : 'Tentar Novamente'}
-                                </Text>
+                                </TextComponent>
                              </TouchableOpacity>
                          </View>
                      )}
@@ -499,8 +415,6 @@ const GuesslyGameScreen = ({ onClose }: { onClose: () => void }) => { // Assumin
                             <View style={styles.wordDisplayContainer}>
                                 {currentWordData.starter.split('').map((letter, index) => (
                                     <View key={index} style={styles.letterBoxDisplay}>
-                                         {/* Display the correct letter if user has typed it (or show starter letter) */}
-                                         {/* This section seems redundant if the input below shows the progress */}
                                         <Text style={styles.letterTextDisplay}>{letter === '_' ? '' : letter}</Text>
                                      </View>
                                  ))}
@@ -519,16 +433,16 @@ const GuesslyGameScreen = ({ onClose }: { onClose: () => void }) => { // Assumin
                                         showSoftInputOnFocus={false}
                                         caretHidden={true}
                                         textAlign="center"
+                                        textAlignVertical='center'
                                         selectionColor={'transparent'}
                                         editable={!gameOver && timerStarted}
                                         selectTextOnFocus={false}
-                                        blurOnSubmit={false}
                                     />
                                 ))}
                             </View>
 
                             {/* Hint */}
-                            <Text style={styles.hintText}>{currentWordData.hint}</Text>
+                            <TextComponent weight="bold" size="medium" style={styles.hintText}>{currentWordData.hint}</TextComponent>
 
                             {/* Controls Container (Skip, Help) */}
                             <View style={styles.controlsContainer}>
@@ -537,31 +451,31 @@ const GuesslyGameScreen = ({ onClose }: { onClose: () => void }) => { // Assumin
                                     onPress={skipWord}
                                     disabled={remainingAttempts <= 0 || !timerStarted}
                                 >
-                                    <Ionicons name="play-skip-forward-outline" size={20} color="#fff" />
-                                    <Text style={styles.skipButtonText}> Pular ({remainingAttempts})</Text>
+                                    <Ionicons name="play-skip-forward-outline" size={20} color={colors.colors.white} />
+                                    <TextComponent weight="bold" size="medium" color="white" style={styles.skipButtonText}> Pular ({remainingAttempts})</TextComponent>
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={() => setShowInstructions(true)}>
-                                    <Ionicons name="help-circle-outline" size={30} color={isDarkMode ? '#fff' : '#000'} />
+                                    <Ionicons name="help-circle-outline" size={30} color={colors.colors.white} />
                                 </TouchableOpacity>
                             </View>
 
                             {/* Feedback Message */}
                             {feedbackMessage && (
-                                <Text style={[
+                                <TextComponent weight="bold" size="medium" style={[
                                     styles.feedbackText,
                                     feedbackMessageType === 'correct' ? styles.feedbackCorrect : {},
                                     feedbackMessageType === 'incorrect' || feedbackMessageType === 'error' ? styles.feedbackIncorrect : {},
                                     feedbackMessageType === 'skip' ? styles.feedbackSkip : {},
                                 ]}>
                                     {feedbackMessage}
-                                </Text>
+                                </TextComponent>
                             )}
                          </>
                      )}
 
                      {/* Show message if word data failed to load */}
                       {!gameOver && !currentWordData && wordDataSets.length === 0 && (
-                          <Text style={styles.feedbackIncorrect}>Erro ao carregar palavras. Tente mudar o idioma ou reiniciar.</Text>
+                          <TextComponent size="small" style={styles.feedbackIncorrect}>Erro ao carregar palavras. Tente mudar o idioma ou reiniciar.</TextComponent>
                       )}
 
                  </View>
@@ -571,7 +485,7 @@ const GuesslyGameScreen = ({ onClose }: { onClose: () => void }) => { // Assumin
             {!gameOver && timerStarted && (
                 <Keyboard
                     onKeyPress={handleCustomKeyPress}
-                    keyBackgroundColors={getKeyColors()} // Pass generated colors
+                    keyBackgroundColors={keyColors} // Pass generated colors
                 />
             )}
 
@@ -586,83 +500,37 @@ const GuesslyGameScreen = ({ onClose }: { onClose: () => void }) => { // Assumin
                      else setShowInstructions(false);
                 }}
             >
-                 {/* Using a wrapper allows tapping outside modal content to potentially close/start */}
-                 <TouchableOpacity
+                <TouchableOpacity
                     style={styles.modalOverlay}
                     activeOpacity={1}
-                    // onPressOut={() => { // Optional: Tap outside to start/close
-                    //     if (!timerStarted) handleStartGame();
-                    //     else setShowInstructions(false);
-                    // }}
-                 >
-                    {/* Prevent taps inside the content area from closing */}
+                >
                     <TouchableOpacity activeOpacity={1} style={styles.modalContainer}>
-                        <TouchableOpacity
-                            style={styles.modalCloseButtonAbsolute}
-                             // Close button always starts the game (or restarts if already over)
-                            onPress={handleStartGame}
-                        >
-                            <Ionicons name="close-circle-outline" size={35} color={isDarkMode ? '#ddd' : '#555'} />
-                        </TouchableOpacity>
-
-                        <Text style={styles.modalTitle}>Instruções</Text>
-
+                        <TextComponent weight="bold" size="large" style={styles.modalTitle}>Instruções</TextComponent>
                         <ScrollView style={styles.modalContentScrollView}>
-                             <Text style={styles.modalStrongText}>Descubra a palavra levando em conta a dica.</Text>
-                             <Text style={styles.modalBodyText}>A dica está em Português ({language === 'en' ? 'English' : 'Português'}), mas a palavra deve ser escrita no idioma selecionado ({language === 'en' ? 'Inglês' : 'Português'}).</Text>
+                             <TextComponent style={styles.modalStrongText}>Descubra a palavra levando em conta a dica.</TextComponent>
+                             <TextComponent style={styles.modalBodyText}>A dica está em {language === 'en' ? 'Inglês' : 'Português'}, mas a palavra deve ser escrita no idioma selecionado {language === 'en' ? 'Inglês' : 'Português'}.</TextComponent>
                              <View style={styles.list}>
-                                <Text style={styles.listItem}><Text style={styles.bullet}>•</Text> Você pode pular no máximo duas vezes.</Text>
-                                <Text style={styles.listItem}><Text style={styles.bullet}>•</Text> Não há limite de tentativas erradas por palavra.</Text>
-                                <Text style={styles.listItem}><Text style={styles.bullet}>•</Text> O jogo acaba quando o tempo zerar ou acertar todas as palavras.</Text>
+                                <TextComponent size="small" style={styles.listItem}><Text style={styles.bullet}>•</Text> Você pode pular no máximo duas vezes.</TextComponent>
+                                <TextComponent size="small" style={styles.listItem}><Text style={styles.bullet}>•</Text> Não há limite de tentativas erradas por palavra.</TextComponent>
+                                <TextComponent size="small" style={styles.listItem}><Text style={styles.bullet}>•</Text> O jogo acaba quando o tempo zerar ou acertar todas as palavras.</TextComponent>
                              </View>
                          </ScrollView>
 
                          <TouchableOpacity style={styles.modalStartButton} onPress={handleStartGame}>
-                            <Text style={styles.modalStartButtonText}>Começar!</Text>
+                            <TextComponent style={styles.modalStartButtonText}>Começar!</TextComponent>
                          </TouchableOpacity>
                     </TouchableOpacity>
                 </TouchableOpacity>
             </Modal>
-
-        </KeyboardAvoidingView>
+                
+        </Container>
     );
 };
 
-// --- Mock Colors object (if not globally available) ---
-const Colors = {
-    amber: { default: '#FFAE00', darker: '#EA9000' },
-    indigo: { default: '#341F94', darker: '#2C1A7E' },
-    // Add other necessary colors if getStyles uses them
-};
-
 // --- Styles Function (getStyles) ---
-// (This should be the same comprehensive getStyles function from the previous responses,
-// ensure it includes all necessary styles: kbAvoid, mockTopBar, scrollContainer, gameContainer,
-// centered, progressBarContainer, progressBar, inputContainer, letterInput, hintText,
-// controlsContainer, skipButton, disabledButton, feedbackText, feedbackCorrect, feedbackIncorrect, feedbackSkip,
-// gameOverContainer, gameOverText, gameOverScore, restartButton, restartButtonText,
-// modalOverlay, modalContainer, modalCloseButtonAbsolute, modalTitle, modalContentScrollView,
-// modalStrongText, modalBodyText, list, listItem, bullet, modalStartButton, modalStartButtonText)
-const getStyles = (isDarkMode: boolean) => StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
     kbAvoid: {
         flex: 1,
-        backgroundColor: isDarkMode ? '#121212' : '#F3F3F3', // Slightly different background for contrast
-    },
-    mockTopBar: { // Replace with actual TopBarComponent styles
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 15,
-        paddingTop: Platform.OS === 'ios' ? 50 : 15,
-        paddingBottom: 10,
-        backgroundColor: isDarkMode ? '#1F1F1F' : '#FFFFFF', // Match keyboard/modal theme
-        borderBottomWidth: 1,
-        borderBottomColor: isDarkMode ? '#333' : '#DDD',
-    },
-    mockTopBarTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: isDarkMode ? '#FFF' : '#000',
     },
     scrollContainer: {
         flexGrow: 1,
@@ -679,19 +547,17 @@ const getStyles = (isDarkMode: boolean) => StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: isDarkMode ? '#121212' : '#F3F3F3',
     },
     progressBarContainer: {
         height: 10,
         width: '100%',
-        backgroundColor: isDarkMode ? '#3a3a3c' : '#e0e0e0', // Match keyboard absent color
         borderRadius: 5,
         marginBottom: 25, // More space
         overflow: 'hidden',
     },
     progressBar: {
         height: '100%',
-        backgroundColor: '#e65050', // Softer Red
+        backgroundColor: colors.colors.amber,
         borderRadius: 5,
     },
     inputContainer: {
@@ -700,93 +566,86 @@ const getStyles = (isDarkMode: boolean) => StyleSheet.create({
         justifyContent: 'center',
     },
     letterInput: {
-        width: screenWidth * 0.13, // Adjust size
-        height: screenWidth * 0.13, // Keep square
+        width: screenWidth * 0.14, // Adjust size
+        height: screenWidth * 0.14, // Keep square
         maxWidth: 55, // Max size
         maxHeight: 55, // Max size
         margin: 4,
-        borderWidth: 2,
-        borderColor: isDarkMode ? '#565758' : '#d3d6da', // Border color
+        borderWidth: 1,
+        borderColor: colors.colors.gray, // Border color
         borderRadius: 6,
         textAlign: 'center',
         fontSize: screenWidth * 0.07, // Responsive font size
         fontWeight: 'bold',
-        color: isDarkMode ? '#FFF' : '#000',
-        backgroundColor: isDarkMode ? '#121212' : '#FFFFFF', // Input background matches page
+        color: colors.text.primary,
+        backgroundColor: colors.background.primary, // Input background matches page
     },
     hintText: {
         marginVertical: 15,
         paddingVertical: 8,
         paddingHorizontal: 12,
-        // backgroundColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
-        borderWidth: 1,
-        borderColor: isDarkMode ? '#555' : '#DDD',
-        borderRadius: 8,
+        backgroundColor: colors.background.list,
+        borderRadius: 6,
         textAlign: 'center',
-        fontSize: 15,
-        fontWeight: isDarkMode ? '400' : '500',
-        color: isDarkMode ? '#E0E0E0' : '#333',
+        color: colors.colors.white,
         width: '100%' // Take full width
     },
     wordDisplayContainer: { // For showing the initial starter word letters
         flexDirection: 'row',
         marginBottom: 10,
-        // justifyContent: 'center', // Center if needed
+        justifyContent: 'center', // Center if needed
    },
    letterBoxDisplay: { // Style for the display boxes (if different from input)
-        width: screenWidth * 0.12, // Adjust size based on screen width
-        height: screenWidth * 0.12,
+        width: screenWidth * 0.13, // Adjust size based on screen width
+        height: screenWidth * 0.13,
         margin: 4,
         borderRadius: 6,
-        backgroundColor: isDarkMode ? '#222' : '#e0e0e0', // Slightly different background
+        backgroundColor: colors.background.primary, // Slightly different background
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: isDarkMode ? '#444' : '#ccc',
+        borderColor: colors.colors.gray,
    },
    letterTextDisplay: { // Text style for the display boxes
         fontSize: screenWidth * 0.06,
         fontWeight: 'bold',
-        color: isDarkMode ? '#ccc' : '#555',
+        color: colors.text.secondary,
    },
     controlsContainer: {
-        flexDirection: 'row',
+        flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'space-between', // Space out buttons
+        justifyContent: 'center', // Space out buttons
         width: '90%', // Limit width
         marginTop: 20,
         marginBottom: 10, // Add margin below controls
+        gap: 10,
     },
     skipButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#B91C1C', // Red-700
+        backgroundColor: colors.colors.deepOrange, // Red-700
+        color: colors.colors.white,
         paddingVertical: 10,
         paddingHorizontal: 15,
         borderRadius: 8,
     },
      disabledButton: {
-        backgroundColor: '#999', // Grey out disabled button
+        backgroundColor: colors.colors.gray, // Grey out disabled button
         opacity: 0.6,
     },
     skipButtonText: {
-        color: '#fff',
-        fontWeight: 'bold',
-        fontSize: 14,
         marginLeft: 5,
     },
     feedbackText: {
         marginTop: 15,
-        marginBottom: 10, // Add margin below feedback
-        fontSize: 16,
-        fontWeight: 'bold',
+        marginBottom: 10, 
         textAlign: 'center',
         minHeight: 20, // Reserve space
     },
     // Use distinct colors for feedback types
-    feedbackCorrect: { color: isDarkMode ? '#6aaa64' : '#538d4e' }, // Green
-    feedbackIncorrect: { color: isDarkMode ? '#f87171' : '#DC2626' }, // Red
-    feedbackSkip: { color: isDarkMode ? '#facc15' : '#ca8a04' }, // Yellow/Amber
+    feedbackCorrect: { color: colors.colors.tealLight }, // Green
+    feedbackIncorrect: { color: colors.colors.deepOrangeLight }, // Red
+    feedbackSkip: { color: colors.colors.amber }, // Yellow/Amber
     gameOverContainer: {
         flex: 1, // Take up available space if needed
         alignItems: 'center',
@@ -799,15 +658,15 @@ const getStyles = (isDarkMode: boolean) => StyleSheet.create({
         fontWeight: 'bold',
         textAlign: 'center',
         marginBottom: 15,
-        color: isDarkMode ? '#FFF' : '#000',
+        color: colors.colors.white,
     },
     gameOverScore: {
         fontSize: 18,
         marginBottom: 25,
-        color: isDarkMode ? '#DDD' : '#333',
+        color: colors.colors.gray,
     },
     restartButton: {
-        backgroundColor: '#DC2626', // Red-600
+        backgroundColor: colors.colors.deepOrange, // Red-600
         paddingVertical: 12,
         paddingHorizontal: 30,
         borderRadius: 8,
@@ -827,7 +686,7 @@ const getStyles = (isDarkMode: boolean) => StyleSheet.create({
         width: '90%',
         maxWidth: 400, // Max width for modal
         maxHeight: '80%',
-        backgroundColor: isDarkMode ? '#1F1F1F' : '#FFFFFF', // Use distinct modal background
+        backgroundColor: colors.bottomSheet.background, // Use distinct modal background
         borderRadius: 15,
         padding: 20, // Adjust padding
         paddingTop: 45, // Extra padding at top because of close button
@@ -838,17 +697,8 @@ const getStyles = (isDarkMode: boolean) => StyleSheet.create({
         shadowRadius: 4,
         elevation: 5,
     },
-    modalCloseButtonAbsolute: {
-        position: 'absolute',
-        top: 10,
-        right: 10,
-        zIndex: 10,
-        padding: 5, // Add padding for easier tap target
-    },
     modalTitle: {
-        fontSize: 20, // Slightly smaller
-        fontWeight: 'bold',
-        color: isDarkMode ? '#FFF' : '#000', // Match top bar title color
+        color: colors.colors.white, // Match top bar title color
         marginBottom: 15,
         textAlign: 'center',
     },
@@ -857,15 +707,12 @@ const getStyles = (isDarkMode: boolean) => StyleSheet.create({
         marginBottom: 20,
      },
     modalStrongText: {
-        fontWeight: 'bold',
-        fontSize: 16,
-        color: isDarkMode ? '#EFEFEF' : '#111',
+        color: colors.colors.white,
         marginBottom: 10,
         textAlign: 'left',
     },
     modalBodyText: {
-        fontSize: 14,
-        color: isDarkMode ? '#CCC' : '#333',
+        color: colors.colors.white,
         lineHeight: 20,
         marginBottom: 15,
         textAlign: 'left',
@@ -875,8 +722,7 @@ const getStyles = (isDarkMode: boolean) => StyleSheet.create({
         alignSelf: 'stretch',
     },
     listItem: {
-        fontSize: 14,
-        color: isDarkMode ? '#CCC' : '#333',
+        color: colors.colors.white,
         lineHeight: 20,
         marginBottom: 8,
         flexDirection: 'row',
@@ -885,10 +731,10 @@ const getStyles = (isDarkMode: boolean) => StyleSheet.create({
      bullet: {
         marginRight: 8,
         // fontWeight: 'bold', // Not necessary for bullet
-        color: isDarkMode ? '#CCC' : '#333',
+        color: colors.colors.white,
      },
     modalStartButton: {
-        backgroundColor: Colors.amber.darker ?? '#EA9000', // Use fallback if Colors not defined
+        backgroundColor: colors.colors.amber, // Use fallback if Colors not defined
         paddingVertical: 12,
         paddingHorizontal: 40,
         borderRadius: 8,
@@ -903,15 +749,13 @@ const getStyles = (isDarkMode: boolean) => StyleSheet.create({
     languageIndicator: {
         width: '100%',
         paddingVertical: 8,
-        backgroundColor: isDarkMode ? '#1F1F1F' : '#FFFFFF',
+        backgroundColor: colors.background.list,
         borderBottomWidth: 1,
-        borderBottomColor: isDarkMode ? '#333' : '#DDD',
+        borderBottomColor: colors.background.listSecondary,
         alignItems: 'center',
     },
     languageText: {
-        fontSize: 14,
-        fontWeight: '500',
-        color: isDarkMode ? '#999' : '#666',
+        color: colors.colors.white,
     },
 });
 

@@ -52,14 +52,14 @@ const ReportsComponent: React.FC<ReportsComponentProps> = ({ studentID, onClose 
       onChange={(index) => {
         if (index === -1) onClose?.();
       }}
-      handleIndicatorStyle={{ backgroundColor: colors.colors.indigo, width: 65 }}
+      handleIndicatorStyle={{ backgroundColor: colors.colors.white, width: 65 }}
       backgroundStyle={{
         ...styles.bottomSheetShadow,
-        backgroundColor: colors.background.primary,
+        backgroundColor: colors.bottomSheet.background,
       }}
     >
       <BottomSheetView style={styles.container}>
-        <TextComponent weight="bold" size="large" color={colors.colors.indigo} style={styles.title}>
+        <TextComponent weight="bold" size="large" style={[styles.title, {color: colors.colors.white}]}>
           Relatórios
         </TextComponent>
 
@@ -81,7 +81,7 @@ const ReportsComponent: React.FC<ReportsComponentProps> = ({ studentID, onClose 
             )}
           />
         ) : (
-          <TextComponent color={colors.text.secondary} style={{ textAlign: 'center', marginTop: 20 }}>
+          <TextComponent style={{ textAlign: 'center', marginTop: 20, color: colors.text.secondary }}>
             Nenhum relatório encontrado.
           </TextComponent>
         )}

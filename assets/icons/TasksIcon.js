@@ -6,7 +6,7 @@ const SVGComponent = (props) => {
   const { colors } = useTheme();
   return (
     <Svg
-      fill={colors.colors.teal}
+      fill={colors.colors.tealLight}
     width="30px"
     height="30px"
     viewBox="-2 -2 24 24"

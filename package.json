@@ -62,7 +62,8 @@
     "react-native-web": "~0.19.13",
     "react-native-webview": "13.12.5",
     "react-native-wheel-picker-expo": "^0.5.4",
-    "stream-chat-expo": "^6.7.2"
+    "stream-chat-expo": "^6.7.2",
+    "stream-chat-react-native": "^6.7.2"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

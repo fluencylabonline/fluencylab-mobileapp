@@ -46,3 +46,22 @@ export type Report = {
     id?: string;
     hint?: string;
   }
+
+
+  //Chat types
+  export interface User {
+    uid: string;
+    name: string;
+    email: string;
+    role: 'student' | 'teacher';
+    professorId?: string; // Only for students
+    profilePictureURL?: string;
+}
+
+export interface Message {
+    id: string;
+    text: string;
+    senderId: string;
+    timestamp: number;
+    // Add other message properties as needed
+}

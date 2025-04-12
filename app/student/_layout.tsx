@@ -12,7 +12,7 @@ import Practice from './practice';
 import { useTheme } from '@/constants/useTheme';
 import StudentHome from './home';
 import StudentProfile from './profile';
-import Chat from './chat';
+import StudentChatScreen from './chat';
 const Tab = createBottomTabNavigator();
 
 const _layout = () => {
@@ -65,7 +65,7 @@ const _layout = () => {
         <Tab.Screen name="Home" component={StudentHome} />
         <Tab.Screen name="Practice" component={Practice} />
         <Tab.Screen name="Profile" component={StudentProfile} />
-        <Tab.Screen name="Chat" component={Chat} />
+        <Tab.Screen name="Chat" component={StudentChatScreen} />
       </Tab.Navigator>
     </View>
   );

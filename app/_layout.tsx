@@ -11,13 +11,17 @@ export default function RootLayout() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const router = useRouter();
   const segments = useSegments();
+  const [userID, setUserID] = useState<any | 'null'>(null);
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setIsAuthenticated(!!user);
+      setUserID(user?.uid || null);
     });
     return () => unsubscribe();
   }, []);
 
+  /*
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (authUser) => {
     if (authUser) {
@@ -32,7 +36,7 @@ export default function RootLayout() {
 
     return () => unsubscribe();
   }, []);
-
+*/
   useEffect(() => {
     const protectedRoutes = ['/admin', '/student', '/teacher'];
     const currentRoute = segments.join('/');

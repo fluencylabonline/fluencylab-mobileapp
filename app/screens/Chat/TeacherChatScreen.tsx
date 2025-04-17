@@ -1,191 +1,333 @@
 // screens/teacher/ChatScreen.tsx
 import React, { useState, useEffect, useCallback } from 'react';
-import { FlatList, View, Text, StyleSheet } from 'react-native'; // Added Text import
-import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'; // Import useLocalSearchParams and useRouter
-import { doc, onSnapshot, collection, query, orderBy, addDoc } from 'firebase/firestore';
-import { db } from '@/config/firebase'; // Adjusted path
-import { fetchUserData } from '@/hooks/fetchUserData'; // Adjusted path
-import Message from '@/components/Chat/MessageComponent'; // Adjusted path
-import MessageInput from '@/components/Chat/MessageInput'; // Adju
-import { Message as MessageType, User } from '@/types'; // Assuming types is setup
-import useFetchUserID from '@/hooks/fetchUserID'; // Assuming this hook exists and works
+import { View, Text, StyleSheet } from 'react-native';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { MotiView } from 'moti';
+import { Skeleton } from 'moti/skeleton';
+
+import {
+  onSnapshot,
+  collection,
+  query,
+  orderBy,
+  addDoc,
+  writeBatch,
+  getDocs,
+  where
+} from 'firebase/firestore';
+import { db } from '@/config/firebase';
+import { fetchUserData } from '@/hooks/fetchUserData';
+import MessageInput from '@/components/Chat/MessageInput';
+import { Message as MessageType, User } from '@/types';
+import useFetchUserID from '@/hooks/fetchUserID';
 import Container from '@/components/ContainerComponent';
 import ChatHeader from '@/components/Chat/ChatHeader';
 import MessageList from '@/components/Chat/MessageList';
+import { translateText } from '@/utils/translationService';
 
-const TeacherChatScreen: React.FC = () => { // Removed props
-    const router = useRouter(); // For back navigation
-    const { userID } = useFetchUserID();
-    const params = useLocalSearchParams<{ student?: string }>(); // Get params using useLocalSearchParams
-    const [student, setStudent] = useState<User | null>(null); // State for student
-    const [messages, setMessages] = useState<MessageType[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [teacher, setTeacher] = useState<User | null>(null); // Keep teacher state if needed
+const TeacherChatScreen: React.FC = () => {
+  const router = useRouter();
+  const { userID } = useFetchUserID();
+  const params = useLocalSearchParams<{ student?: string }>();
+  const [student, setStudent] = useState<User | null>(null);
+  const [messages, setMessages] = useState<MessageType[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [teacher, setTeacher] = useState<User | null>(null);
+  const [replyingTo, setReplyingTo] = useState<MessageType | null>(null);
+  const [usersMap, setUsersMap] = useState<Record<string, User>>({});
 
-    // Effect to parse the student param
-    useEffect(() => {
-        if (params.student) {
-            try {
-                const parsedStudent = JSON.parse(params.student);
-                setStudent(parsedStudent);
-            } catch (e) {
-                console.error("Failed to parse student data:", e);
-                setError("Invalid student data received.");
-                setStudent(null); // Set student to null if parsing fails
-            }
-        } else {
-             setError("No student data received.");
-             setStudent(null); // Set student to null if no param
-        }
-    }, [params.student]); // Depend on the raw param string
+  // Parse the student param from the route
+  useEffect(() => {
+    if (params.student) {
+      try {
+        const parsedStudent = JSON.parse(params.student);
+        setStudent(parsedStudent);
+        // Add student to users map
+        setUsersMap(prev => ({
+          ...prev,
+          [parsedStudent.uid]: parsedStudent
+        }));
+      } catch (e) {
+        console.error("Failed to parse student data:", e);
+        setError("Invalid student data received.");
+        setStudent(null);
+      }
+    } else {
+      setError("No student data received.");
+      setStudent(null);
+    }
+  }, [params.student]);
 
-    const getChatRoomId = useCallback((studentId: string, teacherId: string) => {
-        // Ensure consistent ordering to generate the same ID regardless of who calls this
-        const sortedIds = [studentId, teacherId].sort();
-        return `${sortedIds[0]}-${sortedIds[1]}`;
-    }, []); // Memoize the function
+  // Utility: Generate a consistent chat room ID between teacher and student
+  const getChatRoomId = useCallback((studentId: string, teacherId: string) => {
+    const sortedIds = [studentId, teacherId].sort();
+    return `${sortedIds[0]}-${sortedIds[1]}`;
+  }, []);
 
-    // Effect to load teacher data and messages
-    useFocusEffect(
-      useCallback(() => {
-        // Exit early if userID or student data is not available
-        if (!userID || !student) {
-            // If student is null due to parsing error or missing param, stop loading
-            if(!student) setLoading(false);
-            return;
-        };
-
-        setLoading(true);
-        setError(null);
-        let unsubscribe: (() => void) | undefined; // To store the unsubscribe function
-
-        const loadInitialData = async () => {
-            try {
-                // Fetch teacher data (optional, only if needed for display or logic)
-                const teacherData = await fetchUserData(userID);
-                 const mappedTeacherData: User = { // Map to ensure type safety
-                    uid: userID, // Use userID directly as it's the ID used for fetching
-                    name: teacherData.name || 'Teacher', // Provide defaults
-                    email: teacherData.email || '',
-                    role: teacherData.role || 'teacher',
-                 };
-                setTeacher(mappedTeacherData);
-
-                // Get chat room ID
-                const chatRoomId = getChatRoomId(student.uid, userID);
-                console.log(`Listening to chat room: ${chatRoomId}`);
-
-                // Set up the listener for messages
-                const messagesRef = collection(db, 'chats', chatRoomId, 'messages');
-                const messagesQuery = query(messagesRef, orderBy('timestamp', 'asc'));
-
-                unsubscribe = onSnapshot(messagesQuery, (snapshot) => {
-                    const fetchedMessages = snapshot.docs.map(doc => ({
-                        id: doc.id,
-                        ...doc.data() as Omit<MessageType, 'id'>,
-                    }));
-                    console.log(`Fetched ${fetchedMessages.length} messages.`);
-                    setMessages(fetchedMessages);
-                    setLoading(false); // Stop loading once messages are fetched
-                }, (err) => { // Add error handling for the snapshot listener
-                     console.error("Error listening to messages:", err);
-                     setError("Failed to load messages in real-time.");
-                     setLoading(false);
-                });
-
-            } catch (err: any) {
-                console.error("Error loading initial chat data:", err);
-                setError(err.message || "Failed to load chat data.");
-                setLoading(false);
-            }
-        };
-
-        loadInitialData();
-
-        // Cleanup function to unsubscribe when the component unmounts or dependencies change
-        return () => {
-            if (unsubscribe) {
-                console.log("Unsubscribing from message listener.");
-                unsubscribe();
-            }
-        };
-    }, [userID, student, getChatRoomId]) // Dependencies: userID, student object, and the memoized getChatRoomId
+  // Mark unread messages as read for a given chat room.
+  const markMessagesAsRead = async (chatRoomId: string, currentUserId: string) => {
+    const messagesRef = collection(db, 'chats', chatRoomId, 'messages');
+    const unreadQuery = query(
+      messagesRef,
+      where('read', '==', false),
+      where('senderId', '!=', currentUserId)
     );
+    const unreadSnapshot = await getDocs(unreadQuery);
+    if (!unreadSnapshot.empty) {
+      const batch = writeBatch(db);
+      unreadSnapshot.docs.forEach(doc => {
+        batch.update(doc.ref, { read: true });
+      });
+      await batch.commit();
+      console.log("Marked unread messages as read.");
+    }
+  };
 
-
-    const handleSendMessage = async (text: string) => {
-        // Ensure userID and student are available before sending
-        if (!userID || !student) {
-            console.error("Cannot send message: User ID or student data missing.");
-            setError("Could not send message. Missing user or student information.");
-            return;
-        }
-
-        const chatRoomId = getChatRoomId(student.uid, userID);
-        const messagesRef = collection(db, 'chats', chatRoomId, 'messages');
-        const newMessage: Omit<MessageType, 'id'> = {
-            text: text.trim(), // Trim whitespace
-            senderId: userID,
-            timestamp: Date.now(),
-        };
-
-        try {
-            await addDoc(messagesRef, newMessage);
-            console.log("Message sent successfully.");
-        } catch (error: any) {
-            console.error("Error sending message:", error);
-            setError("Failed to send message.");
-        }
+  const handleTranslateMessage = async (messageId: string, text: string) => {
+    try {
+      const translation = await translateText(text);
+     
+      // Update local state
+      setMessages(prevMessages => 
+        prevMessages.map(msg => 
+          msg.id === messageId ? { ...msg, translation } : msg
+        )
+      );
+      
+      return translation;
+    } catch (err) {
+      console.error('Translation error:', err);
+      throw err;
+    }
     };
 
-    // Handle loading state
-    if (loading) {
-        return <View className="flex-1 items-center justify-center"><Text>Loading chat...</Text></View>;
+  // Handler for replying to a message
+  const handleReplyToMessage = (message: MessageType) => {
+    setReplyingTo(message);
+  };
+
+  // Handler for canceling a reply
+  const handleCancelReply = () => {
+    setReplyingTo(null);
+  };
+
+  // Load teacher data and subscribe to messages in real time.
+  useFocusEffect(
+    useCallback(() => {
+      if (!userID || !student) {
+        if (!student) setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+      let unsubscribe: (() => void) | undefined;
+
+      const loadInitialData = async () => {
+        try {
+          // Fetch teacher data (if needed)
+          const teacherData = await fetchUserData(userID);
+          const mappedTeacherData: User = {
+            uid: userID,
+            name: teacherData.name || 'Teacher',
+            email: teacherData.email || '',
+            role: teacherData.role || 'teacher',
+            profilePictureURL: teacherData.profilePictureURL || '',
+          };
+          setTeacher(mappedTeacherData);
+          
+          // Add teacher to users map
+          setUsersMap(prev => ({
+            ...prev,
+            [userID]: mappedTeacherData
+          }));
+
+          // Compute chat room ID from teacher and student IDs.
+          const chatRoomId = getChatRoomId(student.uid, userID);
+          console.log(`Listening to chat room: ${chatRoomId}`);
+
+          // Set up the real-time listener for messages.
+          const messagesRef = collection(db, 'chats', chatRoomId, 'messages');
+          const messagesQuery = query(messagesRef, orderBy('timestamp', 'asc'));
+
+          unsubscribe = onSnapshot(
+            messagesQuery,
+            async (snapshot) => {
+              const fetchedMessages = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data() as Omit<MessageType, 'id'>,
+              }));
+              console.log(`Fetched ${fetchedMessages.length} messages.`);
+              setMessages(fetchedMessages);
+              setLoading(false);
+
+              // Mark all unread messages (not sent by current user) as read.
+              await markMessagesAsRead(chatRoomId, userID);
+            },
+            (err) => {
+              console.error("Error listening to messages:", err);
+              setError("Failed to load messages in real-time.");
+              setLoading(false);
+            }
+          );
+        } catch (err: any) {
+          console.error("Error loading initial chat data:", err);
+          setError(err.message || "Failed to load chat data.");
+          setLoading(false);
+        }
+      };
+
+      loadInitialData();
+
+      // Clean up the listener on unmount or dependency change.
+      return () => {
+        if (unsubscribe) {
+          console.log("Unsubscribing from message listener.");
+          unsubscribe();
+        }
+      };
+    }, [userID, student, getChatRoomId])
+  );
+
+  const handleSendMessage = async (text: string, replyTo?: MessageType['replyTo']) => {
+    if (!userID || !student) {
+      console.error("Cannot send message: User ID or student data missing.");
+      setError("Could not send message. Missing user or student information.");
+      return;
     }
 
-    // Handle error state
-     if (error) {
-        return (
-            <View className="flex-1 items-center justify-center p-4">
-                {/* Optionally add a header even in error state */}
-                <Text className="text-red-500 text-center">{error}</Text>
-            </View>
-        );
+    const chatRoomId = getChatRoomId(student.uid, userID);
+    const messagesRef = collection(db, 'chats', chatRoomId, 'messages');
+    const newMessage: Omit<MessageType, 'id'> = {
+      text: text.trim(),
+      senderId: userID,
+      timestamp: Date.now(),
+      read: false,
+    };
+
+    // Add reply information if provided
+    if (replyTo) {
+      newMessage.replyTo = replyTo;
     }
 
-    // Handle case where student data couldn't be loaded/parsed
-    if (!student) {
-         return (
-            <View className="flex-1 items-center justify-center p-4">
-                <Text className="text-gray-500 dark:text-gray-400">Could not load student information.</Text>
-            </View>
-        );
+    try {
+      await addDoc(messagesRef, newMessage);
+      console.log("Message sent successfully.");
+    } catch (error: any) {
+      console.error("Error sending message:", error);
+      setError("Failed to send message.");
     }
+  };
 
-
-    // Render the chat interface
+  // Render loading state
+  if (loading) {
     return (
-        <Container>
-        <View style={styles.centeredContainer}>
-            <ChatHeader recipientName={student.name || 'Student'} onBackPress={() => router.back()} />
-            <MessageList
-                messages={messages}
-                currentUserID={userID!} // Assert userID is non-null
-                // Pass specific styles if needed, like removing default padding if Container provides it
-                // style={{ paddingHorizontal: 0 }}
-                // contentContainerStyle={{ paddingVertical: 0 }}
-            />
-            <MessageInput onSendMessage={handleSendMessage} />
+      <Container>
+        <MotiView
+          style={{
+            padding: 16,
+            borderBottomWidth: StyleSheet.hairlineWidth,
+            borderBottomColor: '#ddd',
+            flexDirection: 'row',
+            gap: 16,
+            alignItems: 'center',
+          }}
+          from={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <Skeleton height={50} width={50} radius="round" />
+          <Skeleton height={10} width={160} radius="round" />
+        </MotiView>
+  
+        <View style={{ flex: 1, padding: 16 }}>
+          {[...Array(6)].map((_, index) => (
+            <MotiView
+              key={index}
+              style={{
+                alignSelf: index % 2 === 0 ? 'flex-start' : 'flex-end',
+                marginBottom: 12,
+                maxWidth: '75%',
+              }}
+              from={{ opacity: 0, translateY: 10 }}
+              animate={{ opacity: 1, translateY: 0 }}
+              transition={{ delay: index * 100 }}
+            >
+              <Skeleton
+                height={index % 2 === 0 ? 40 : 45}
+                width={index % 2 === 0 ? 200 : 140}
+                radius={16}
+              />
+            </MotiView>
+          ))}
         </View>
-        </Container>
+  
+        <View>
+          <Skeleton height={55} width="100%" radius={24} />
+        </View>
+      </Container>
     );
+  }  
+
+  // Render error state
+  if (error) {
+    return (
+      <View style={styles.centeredContainer}>
+        <Text style={styles.errorText}>{error}</Text>
+      </View>
+    );
+  }
+
+  // Handle case where student data is missing
+  if (!student) {
+    return (
+      <View style={styles.centeredContainer}>
+        <Text style={styles.infoText}>Could not load student information.</Text>
+      </View>
+    );
+  }
+
+  // Render the chat interface
+  return (
+    <Container>
+      <View style={styles.centeredContainer}>
+        <ChatHeader 
+          recipientName={student.name} 
+          profilePictureURL={student.profilePictureURL}
+          onBackPress={() => router.push('/teacher/chat')} 
+        />
+        <MessageList
+          messages={messages}
+          currentUserID={userID!}
+          onReplyToMessage={handleReplyToMessage}
+          usersMap={usersMap}
+          onTranslateMessage={handleTranslateMessage}
+        />
+        <MessageInput 
+          onSendMessage={handleSendMessage}
+          replyingTo={replyingTo}
+          onCancelReply={handleCancelReply}
+          currentUserID={userID!}
+        />
+      </View>
+    </Container>
+  );
 };
 
 export default TeacherChatScreen;
 
 const styles = StyleSheet.create({
-    centeredContainer: {
-        flex: 1,
-    },
-})
+  centeredContainer: {
+    flex: 1,
+  },
+  errorText: {
+    color: 'red',
+    textAlign: 'center',
+    padding: 16,
+  },
+  infoText: {
+    color: 'gray',
+    textAlign: 'center',
+    padding: 16,
+  },
+});

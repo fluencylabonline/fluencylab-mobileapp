@@ -1,99 +1,271 @@
-// screens/teacher/StudentListScreen.tsx
-import React, { useState, useEffect, useCallback } from 'react';
-import { FlatList, View, Text } from 'react-native'; // Added Text import
-import { useFocusEffect, useRouter } from 'expo-router'; // Import useRouter
-import { collection, getDocs, query, where } from 'firebase/firestore';
-import { db } from '../../config/firebase'; // Adjusted path assuming config is at root
-import { fetchUserData } from '../../hooks/fetchUserData'; // Adjusted path assuming hooks is at root
-import StudentListItem from '@/components/Chat/StudentListItem'; // Adjusted path assuming components is at root
-import { User } from '@/types'; // Assuming types is setup in root or aliased
-import useFetchUserID from '@/hooks/fetchUserID'; // Assuming this hook exists and works
+import React, { useState, useCallback } from 'react';
+import { FlatList, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
+import { db } from '../../config/firebase';
+import StudentListItem from '@/components/Chat/StudentListItem'; 
+import { User } from '@/types';
+import useFetchUserID from '@/hooks/fetchUserID';
+import TopBarComponent from '@/components/TopBarComponent';
+import Container from '@/components/ContainerComponent';
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '@/constants/useTheme';
+import InputComponent from '@/components/InputComponent';
+import { MotiView } from 'moti';
+import { Skeleton } from 'moti/skeleton';
+
+interface EnhancedUser extends User {
+  lastMessage?: string;
+}
 
 const TeacherStudentListScreen = () => {
-    const router = useRouter(); // Use expo-router's router
-    const { userID } = useFetchUserID(); // Using your custom hook
-    const [students, setStudents] = useState<User[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    // Removed useNavigation import and usage
+  const router = useRouter();
+  const { userID } = useFetchUserID();
+  const [students, setStudents] = useState<EnhancedUser[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+    
+  const { colors, isDark } = useTheme();
+  const styles = getStyles(colors);
 
-    useFocusEffect(
-      useCallback(() => {
-        const loadStudents = async () => {
-            if (!userID) {
-                console.log("No userID found, skipping student load.");
-                setLoading(false); // Stop loading if no user ID
-                return;
-            }
+  // Utility to create a consistent chat room ID between teacher and student
+  const getChatRoomId = (studentId: string, teacherId: string) => {
+    const sortedIds = [studentId, teacherId].sort();
+    return `${sortedIds[0]}-${sortedIds[1]}`;
+  };
 
-            setLoading(true);
-            setError(null);
-            console.log(`Fetching students for teacher ID: ${userID}`);
-            try {
-                // Fetch the teacher's data (optional, depends if needed elsewhere)
-                // const teacherData = await fetchUserData(userID);
+  useFocusEffect(
+    useCallback(() => {
+      const loadStudents = async () => {
+        if (!userID) {
+          console.log("No userID found, skipping student load.");
+          setLoading(false);
+          return;
+        }
 
-                // Fetch all students where professorId matches the teacher's UID
-                const studentsRef = collection(db, 'users');
-                const studentsQuery = query(studentsRef, where('role', '==', 'student'), where('professorId', '==', userID));
-                const studentsSnapshot = await getDocs(studentsQuery);
+        setLoading(true);
+        setError(null);
+        console.log(`Fetching students for teacher ID: ${userID}`);
 
-                const fetchedStudents = studentsSnapshot.docs.map(doc => ({
-                    uid: doc.id,
-                    ...doc.data(),
-                })) as User[];  // Type assertion
-                console.log(`Found ${fetchedStudents.length} students.`);
-                setStudents(fetchedStudents);
-            } catch (err: any) {
-                console.error("Error loading students:", err);
-                setError(err.message || "Failed to load students.");
-            } finally {
-                 setLoading(false);
-            }
-        };
+        try {
+          const studentsRef = collection(db, 'users');
+          const studentsQuery = query(
+            studentsRef,
+            where('role', '==', 'student'),
+            where('professorId', '==', userID)
+          );
+          const studentsSnapshot = await getDocs(studentsQuery);
 
-        loadStudents();
-    }, [userID]) // Dependency array includes userID
-    );
+          const fetchedStudents = studentsSnapshot.docs.map(doc => ({
+            uid: doc.id,
+            ...doc.data(),
+          })) as User[];
 
-    const handleStudentPress = (student: User) => {
-        // Pass student data as a query parameter.
-        // It needs to be stringified as query params are strings.
-        const studentParam = JSON.stringify(student);
-        // Navigate using router.push with pathname and params
-        // Ensure the pathname matches your file structure in the 'app' directory
-        router.push({
-            pathname: '/screens/Chat/TeacherChatScreen', // Correct path relative to 'app' directory
-            params: { student: studentParam },
-        });
-    };
+          // For each student, fetch the last message from the corresponding chat room
+          const enhancedStudents: EnhancedUser[] = await Promise.all(
+            fetchedStudents.map(async (student) => {
+              const chatRoomId = getChatRoomId(student.uid, userID);
+              const messagesRef = collection(db, 'chats', chatRoomId, 'messages');
+              const messagesQuery = query(messagesRef, orderBy('timestamp', 'desc'), limit(1));
+              const messagesSnapshot = await getDocs(messagesQuery);
+              const lastMessage = messagesSnapshot.docs[0]?.data()?.text || '';
+              return { ...student, lastMessage };
+            })
+          );
 
-    if (loading) {
-        return <View className="flex-1 items-center justify-center"><Text>Loading students...</Text></View>;
-    }
+          console.log(`Found ${enhancedStudents.length} students.`);
+          setStudents(enhancedStudents);
+        } catch (err: any) {
+          console.error("Error loading students:", err);
+          setError(err.message || "Failed to load students.");
+        } finally {
+          setLoading(false);
+        }
+      };
 
-    if (error) {
-        return <View className="flex-1 items-center justify-center"><Text className="text-red-500">{error}</Text></View>;
-    }
+      loadStudents();
+    }, [userID])
+  );
 
-    if (students.length === 0 && !loading) { // Check loading state as well
-        return <View className="flex-1 items-center justify-center"><Text>No students assigned to you yet.</Text></View>;
-    }
-
+  // Filter the conversations based on the search query
+  const filteredConversations = students.filter((student) => {
+    const searchLower = searchQuery.toLowerCase();
     return (
-        <View className="flex-1 bg-white dark:bg-gray-900">
-             {/* Optional: Add a header if needed */}
-            {/* <Text className="text-xl font-bold p-4 text-center">Your Students</Text> */}
-            <FlatList
-                data={students}
-                renderItem={({ item }) => (
-                    // Ensure StudentListItem receives the correct onPress prop
-                    <StudentListItem student={item} onPress={() => handleStudentPress(item)} />
-                )}
-                keyExtractor={(item) => item.uid}
-            />
-        </View>
+      (student.name && student.name.toLowerCase().includes(searchLower)) ||
+      (student.lastMessage && student.lastMessage.toLowerCase().includes(searchLower))
     );
+  });
+
+  // Separate the list into conversations (with last messages) and contacts (without)
+  const conversations = filteredConversations.filter((student) => student.lastMessage?.length);
+
+  const handleStudentPress = (student: User) => {
+    const studentParam = JSON.stringify(student);
+    router.push({
+      pathname: '/screens/Chat/TeacherChatScreen',
+      params: { student: studentParam },
+    });
+  };
+
+  // Navigate to a contacts screen to start a new conversation/chat
+  const handleNewChatPress = () => {
+    router.push('/screens/Chat/TeacherContactsScreen');
+  };
+
+  if (loading) {
+    return (
+      <Container>
+        <TopBarComponent title="Conversas" />
+  
+        {/* Skeleton do campo de busca */}
+        <MotiView
+          from={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ type: 'timing', duration: 500 }}
+          style={{ paddingHorizontal: 16, paddingTop: 16 }}
+        >
+          <Skeleton
+            colorMode={isDark ? 'dark' : 'light'}
+            height={45}
+            width="100%"
+            radius={8}
+          />
+        </MotiView>
+  
+        {/* Skeleton da lista de estudantes */}
+        <View style={styles.sectionContainer}>
+          {[...Array(4)].map((_, index) => (
+            <MotiView
+              key={index}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginBottom: 20,
+                paddingHorizontal: 16,
+              }}
+              from={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: index * 100 }}
+            >
+              <Skeleton
+                colorMode={isDark ? 'dark' : 'light'}
+                height={48}
+                width={48}
+                radius="round"
+              />
+              <View style={{ marginLeft: 12 }}>
+                <View style={{ marginBottom: 6 }}>
+                  <Skeleton
+                    colorMode={isDark ? 'dark' : 'light'}
+                    height={12}
+                    width={200}
+                    radius="round"
+                  />
+                </View>
+                <Skeleton
+                  colorMode={isDark ? 'dark' : 'light'}
+                  height={12}
+                  width={150}
+                  radius="round"
+                />
+              </View>
+            </MotiView>
+          ))}
+        </View>
+      </Container>
+    );
+  }
+  
+  
+  if (error) {
+    return (
+      <View style={styles.centeredContainer}>
+        <Text style={styles.errorText}>{error}</Text>
+      </View>
+    );
+  }
+
+  if (students.length === 0 && !loading) { 
+    return (
+      <View style={styles.centeredContainer}>
+        <Text>No students assigned to you yet.</Text>
+      </View>
+    );
+  }
+
+  return (
+    <Container>
+      <TopBarComponent title="Conversas" />
+
+      <InputComponent
+        style={styles.searchInput}
+        placeholder="Procurar conversas..."
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+        iconName='search-outline'
+        iconSize={20}
+      />
+
+      <View style={styles.sectionContainer}>
+        {conversations.length > 0 ? (
+          <FlatList
+            data={conversations}
+            renderItem={({ item }) => (
+              <StudentListItem student={item} onPress={handleStudentPress} />
+            )}
+            keyExtractor={(item) => item.uid}
+          />
+        ) : (
+          <Text style={styles.noDataText}>Nenhuma conversa iniciada.</Text>
+        )}
+      </View>
+
+      <TouchableOpacity style={styles.fab} onPress={handleNewChatPress}>
+        <Ionicons name="add" size={28} color="#fff" />
+      </TouchableOpacity>
+    </Container>
+  );
 };
 
 export default TeacherStudentListScreen;
+
+const getStyles = (colors: any) => StyleSheet.create({  
+  centeredContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorText: {
+    color: 'red',
+  },
+  searchContainer: {
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+  },
+  searchInput: {
+    height: 40,
+    borderRadius: 20,
+    fontSize: 16,
+  },
+  sectionContainer: {
+    marginVertical: 10,
+    paddingTop: 16,
+  },
+  noDataText: {
+    textAlign: 'center',
+    color: 'gray',
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    backgroundColor: colors.colors.indigo,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
+  },
+});

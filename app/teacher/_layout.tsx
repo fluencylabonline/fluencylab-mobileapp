@@ -35,8 +35,8 @@ const _layout = () => {
             backgroundColor: tabBackground,
             borderTopWidth: 0,
             height: 70,
-            //borderTopLeftRadius: 22,
-            //borderTopRightRadius: 22,
+            borderTopLeftRadius: 22,
+            borderTopRightRadius: 22,
             overflow: 'hidden',
           },
           tabBarItemStyle: {

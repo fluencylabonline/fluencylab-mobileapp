@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react';
 
 import Container from "@/components/ContainerComponent";
 import { TextComponent } from "@/components/TextComponent";
-import { View, TouchableOpacity, Image, StyleSheet } from "react-native";
+import { View, TouchableOpacity, Image, StyleSheet, Platform } from "react-native";
 import { fetchUserData } from '@/hooks/fetchUserData';
 import NotificationIcon from '@/assets/icons/NotificationIcon';
 import { useTheme } from '@/constants/useTheme';
 import BottomSheetNotification from '@/components/Notification/Notification';
-
 
 //Firebase & Auth
 import { useRouter } from 'expo-router';
@@ -48,6 +47,7 @@ const getStyles = (colors: any) => StyleSheet.create({
         width: '100%',
         borderRadius: 8,
         padding: 12,
+        marginTop: 8
       },
       courseDone: {
         color: colors.colors.teal,
@@ -60,11 +60,36 @@ const getStyles = (colors: any) => StyleSheet.create({
         fontSize: 16,
         textAlign: 'center',
       },
+      notificationIconContainer: {
+        padding: 4, 
+      },
+      badgeContainer: {
+        position: 'absolute',
+        top: 20, 
+        right: 3, 
+        backgroundColor: colors.colors.amber, 
+        borderRadius: 10, 
+        width: 13, 
+        height: 13, 
+        justifyContent: 'center',
+        alignItems: 'center',
+        ...(Platform.OS === 'android' && { elevation: 3 }),
+        ...(Platform.OS === 'ios' && {
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.3,
+          shadowRadius: 1,
+        }),
+      },
+      badgeText: {
+        color: colors.text.primary, 
+        fontSize: 8,
+        fontWeight: 'bold',
+      },
   });
 
 export default function StudentProfile(){
     const [user, setUser] = useState<any>();
-    const [coursesArray, setCoursesArray] = useState<boolean[]>([]);
     const { colors } = useTheme();
     const styles = getStyles(colors);
     
@@ -77,16 +102,13 @@ export default function StudentProfile(){
         if (authUser) {
         try {
             const data = await fetchUserData(authUser.uid);
-            const courses: boolean[] = Object.values(data.courses);
             setUser(data);
-            setCoursesArray(courses);
         } catch (error) {
             console.error("Error fetching basic user data:", error);
         } finally {
             //
             }
         } else {
-            //logout
             setUser(null);
         }});
 
@@ -95,7 +117,7 @@ export default function StudentProfile(){
 
     const handleLogout = async () => {
       try {
-        await signOut(auth); // Firebase sign out
+        await signOut(auth);
         await AsyncStorage.removeItem('userToken');
         router.replace('/');
       } catch (error) {
@@ -113,7 +135,16 @@ export default function StudentProfile(){
                 title="Perfil"
                 leftIcon={
                     <TouchableOpacity onPress={handleNotificationPress}>
+                        <View style={styles.notificationIconContainer}>
                         <NotificationIcon />
+                            {notificationCount > 0 && (
+                                <View style={styles.badgeContainer}>
+                                    <TextComponent weight="bold" style={styles.badgeText}>
+                                        {notificationCount > 99 ? '99+' : notificationCount}
+                                    </TextComponent>
+                                </View>
+                            )}
+                        </View>
                     </TouchableOpacity>
                 }
                 rightIcon={<Ionicons onPress={() => router.push('/screens/Settings/Settings')} name="settings-outline" size={26} color={colors.text.primary} />}
@@ -122,63 +153,21 @@ export default function StudentProfile(){
             <View style={styles.mainContainer}>
                 <View style={styles.profileContainer}>
                     <Image source={{ uri: user?.profilePictureURL?? "" }} style={{ width: 160, height: 160, borderRadius: 100, marginBottom: 4 }} />
-                    <TextComponent weight='bold'>{user?.name ?? "Carregando..."}</TextComponent>
-                    <TextComponent weight='bold' size='small' color={colors.text.secondary}>Aluno</TextComponent>
+                    <TextComponent style={{color: colors.text.primary}} weight='bold' size='large'>{user?.name ?? "Carregando..."}</TextComponent>
+                    <TextComponent style={{color: colors.text.secondary}} weight='bold' size='small'>Aluno</TextComponent>
                 </View>
 
                 
-                {/*<View style={styles.checklistContainer}>
+                <View style={styles.checklistContainer}>
                     <TextComponent weight="bold" size="medium">Check-list</TextComponent>
-                    {Array.isArray(coursesArray) && coursesArray.length > 0 ? (
-                        <View
-                        style={[
-                            styles.courseContainer,
-                            { backgroundColor: colors.cards.primary }
-                        ]}
-                        >
-                        {coursesArray.every(course => course) ? (
-                            <TextComponent 
-                                weight='bold'
-                                size='medium'
-                                style={[
-                                    coursesArray.every(course => course)
-                                    ? styles.courseDone
-                                    : styles.courseNotDone,
-                                ]}
-                            >
-                            Curso de instruções feito! 
-                            </TextComponent>
-                        ) : (
-                            <TouchableOpacity >
-                            <TextComponent 
-                                weight='bold'
-                                size='medium'
-                                style={[
-                                    coursesArray.every(course => course)
-                                    ? styles.courseDone
-                                    : styles.courseNotDone,
-                                ]}
-                            >
-                                Fazer curso de instruções
-                            </TextComponent>
-                            </TouchableOpacity>
-                        )}
-                        </View>
-                    ) : (
-                        <TextComponent 
-                            weight='bold' 
-                            size='medium' 
-                            style={{ color: colors.text.secondary }}
-                        >
-                            Sem informação disponível
-                        </TextComponent>
-                    )}
-                </View>*/}
+                    <TextComponent>Contrato</TextComponent>
+                    <TextComponent>Nivelamento</TextComponent>
+                </View>
 
                 <View style={styles.actionContainer}>
                     <TextComponent weight="bold" size="medium">Recuperar Senha</TextComponent>
                     <TouchableOpacity onPress={handleLogout}>
-                        <TextComponent color={colors.colors.deepOrange} weight="bold" size="medium">
+                        <TextComponent style={{color: colors.colors.deepOrange}} weight="bold" size="medium">
                             Sair
                         </TextComponent>
                     </TouchableOpacity>

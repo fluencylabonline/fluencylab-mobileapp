@@ -9,6 +9,7 @@ export const useTheme = () => {
     text: {
       primary: isDark ? AppColors.textPrimary.dark : AppColors.textPrimary.light,
       secondary: isDark ? AppColors.textSecondary.dark : AppColors.textSecondary.light,
+      tertiary: isDark ? AppColors.textPrimary.dark : AppColors.textPrimary.dark, // Inverted for contrast in the Chat
     },
     background: {
       primary: isDark ? AppColors.backgroundPrimary.dark : AppColors.backgroundPrimary.light,
@@ -38,6 +39,10 @@ export const useTheme = () => {
     modalOverlay: {
       primary: isDark ? AppColors.modalOverlay.dark : AppColors.modalOverlay.light,
     },
+    messages: {
+      primary: isDark ? AppColors.messagesPrimary.dark : AppColors.messagesPrimary.light, //normal
+      secondary: isDark ? AppColors.messagesSecondary.dark : AppColors.messagesSecondary.light, //current user
+    }
   };
 
   return {

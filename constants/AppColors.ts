@@ -30,12 +30,20 @@ export const AppColors = {
     dark: '#131016', // #131016
   },
   bottomSheet: { //Or modals and dialogs
-    light: 'rgb(166, 166, 255)', //rgb(108, 108, 201)
-    dark: 'rgb(27, 27, 32)', //rgb(27, 27, 32)
+    light: 'rgb(52, 33, 138)', //rgb(108, 108, 201)
+    dark: 'rgb(37, 37, 37)', //rgb(27, 27, 32)
   },
   modalOverlay: {
     light: 'rgba(0, 0, 0, 0.5)', //rgba(0, 0, 0, 0.5)
     dark: 'rgba(0, 0, 0, 0.8)', //rgba(0, 0, 0, 0.8)
+  },
+  messagesPrimary: {
+    light: 'rgb(207, 207, 212)', // #B7B7F4
+    dark: 'rgb(72, 72, 73)', // #21212A
+  },
+  messagesSecondary: {
+    light: 'rgb(101, 46, 204)', // #8989FB //current user
+    dark: 'rgb(46, 8, 95)', // #151515 //current user
   },
 
   //Colors for buttons, links, etc.

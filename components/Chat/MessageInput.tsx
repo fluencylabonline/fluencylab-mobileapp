@@ -1,8 +1,11 @@
-// components/MessageInput.tsx
+
+// Now let's update the MessageInput component to show the reply preview
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { TextInput, View, TouchableOpacity, StyleSheet } from 'react-native';
+import { TextInput, View, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import { useTheme } from '@/constants/useTheme';
+import { Message as MessageType } from '@/types';
+import ReplyPreview from './ReplyPreview';
 
 import {
     useFonts,
@@ -14,10 +17,18 @@ import {
 } from '@expo-google-fonts/quicksand';
 
 interface MessageInputProps {
-    onSendMessage: (text: string) => void;
+    onSendMessage: (text: string, replyTo?: MessageType['replyTo']) => void;
+    replyingTo: MessageType | null;
+    onCancelReply: () => void;
+    currentUserID: string;
 }
 
-const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage }) => {
+const MessageInput: React.FC<MessageInputProps> = ({ 
+    onSendMessage, 
+    replyingTo,
+    onCancelReply,
+    currentUserID
+}) => {
     const { colors } = useTheme();
     const styles = getStyles(colors);
     
@@ -32,8 +43,18 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage }) => {
 
     const handleSend = () => {
         if (messageText.trim()) {
-            onSendMessage(messageText);
+            if (replyingTo) {
+                const replyInfo = {
+                    id: replyingTo.id,
+                    text: replyingTo.text,
+                    senderId: replyingTo.senderId
+                };
+                onSendMessage(messageText, replyInfo);
+            } else {
+                onSendMessage(messageText);
+            }
             setMessageText('');
+            if (replyingTo) onCancelReply();
         }
     };
 
@@ -42,31 +63,46 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage }) => {
     }
 
     return (
-        <View style={styles.container}>
-            <TextInput
-                style={styles.input}
-                value={messageText}
-                onChangeText={setMessageText}
-                placeholder="Digite sua mensagem..."
-                placeholderTextColor={colors.text.secondary}
-            />
-            <TouchableOpacity onPress={handleSend} style={styles.container}>
-                <Ionicons name="arrow-forward-circle-outline" size={32} style={styles.icon} color={colors.text.secondary} />
-            </TouchableOpacity>
-        </View>
+        <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+            >
+            <View style={styles.container}>
+                {replyingTo && (
+                    <ReplyPreview 
+                        replyingTo={replyingTo} 
+                        onCancelReply={onCancelReply}
+                        isCurrentUser={replyingTo.senderId === currentUserID}
+                    />
+                )}
+                <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%' }}>
+                    <TextInput
+                        style={[styles.input, { color: colors.text.secondary, height: 60 }]}
+                        value={messageText}
+                        onChangeText={setMessageText}
+                        placeholder={replyingTo ? 'Responder...' : 'Digite uma mensagem...'}
+                        multiline={true}
+                        placeholderTextColor={colors.text.secondary}
+                    />
+                    <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
+                        <Ionicons name="arrow-forward-circle-outline" size={32} style={styles.icon} color={colors.text.secondary} />
+                    </TouchableOpacity>
+                </View>
+            </View>
+        </KeyboardAvoidingView>
     );
 };
 
 export default MessageInput;
 
 const getStyles = (colors: any) => StyleSheet.create({  
-    container: {
-    flexDirection: 'row',
+   container: {
+    flexDirection: 'column',
+    justifyContent: "space-around",
     alignItems: 'center',
     paddingHorizontal: 10,
-    height: 65,
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 8,
+    borderTopLeftRadius: 14,
+    borderTopRightRadius: 14,
     backgroundColor: colors.background.list
   },
   icon: {
@@ -77,4 +113,8 @@ const getStyles = (colors: any) => StyleSheet.create({
     fontSize: 15,
     fontFamily: 'Quicksand_500Medium',
   },
+  sendButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  }
 });

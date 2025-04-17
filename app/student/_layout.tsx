@@ -13,6 +13,8 @@ import { useTheme } from '@/constants/useTheme';
 import StudentHome from './home';
 import StudentProfile from './profile';
 import StudentChatScreen from './chat';
+import Calendar from './calendar';
+import CalendarIcon from '@/assets/icons/CalendarIcon';
 const Tab = createBottomTabNavigator();
 
 const _layout = () => {
@@ -30,8 +32,8 @@ const _layout = () => {
             backgroundColor: tabBackground,
             borderTopWidth: 0,
             height: 70,
-            //borderTopLeftRadius: 22,
-            //borderTopRightRadius: 22,
+            borderTopLeftRadius: 22,
+            borderTopRightRadius: 22,
             overflow: 'hidden',
           },
           tabBarItemStyle: {
@@ -50,6 +52,8 @@ const _layout = () => {
               icon = <ProfileIcon />;
             } else if (route.name === 'Chat') {
               icon = <ChatIcon />;
+            } else if (route.name === 'Calendar') {
+              icon = <CalendarIcon />;
             }
             
             return focused ? (
@@ -64,8 +68,10 @@ const _layout = () => {
       >
         <Tab.Screen name="Home" component={StudentHome} />
         <Tab.Screen name="Practice" component={Practice} />
-        <Tab.Screen name="Profile" component={StudentProfile} />
         <Tab.Screen name="Chat" component={StudentChatScreen} />
+        <Tab.Screen name="Calendar" component={Calendar} />
+        <Tab.Screen name="Profile" component={StudentProfile} />
+        
       </Tab.Navigator>
     </View>
   );

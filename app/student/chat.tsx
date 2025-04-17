@@ -2,12 +2,15 @@
 import React, { useState, useCallback } from 'react';
 import { FlatList, View, Text, StyleSheet, ActivityIndicator } from 'react-native'; // Import StyleSheet, ActivityIndicator
 import { useFocusEffect, useRouter } from 'expo-router';
-import { doc, getDoc } from 'firebase/firestore'; // Import doc and getDoc
-import { db } from '../../config/firebase';
 import { fetchUserData } from '../../hooks/fetchUserData';
 import TeacherListItem from '@/components/Chat/TeacherListItem'; // Import the new list item component
 import { User } from '@/types';
 import useFetchUserID from '@/hooks/fetchUserID';
+import Container from '@/components/ContainerComponent';
+import TopBarComponent from '@/components/TopBarComponent';
+import { MotiView } from 'moti';
+import { Skeleton } from 'moti/skeleton';
+import { useTheme } from '@/constants/useTheme';
 
 const StudentTeacherListScreen = () => {
     const router = useRouter();
@@ -15,6 +18,8 @@ const StudentTeacherListScreen = () => {
     const [teachers, setTeachers] = useState<User[]>([]); // State to hold teacher(s)
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const { colors, isDark } = useTheme();
+    const styles = getStyles(colors);
 
     useFocusEffect(
       useCallback(() => {
@@ -61,7 +66,8 @@ const StudentTeacherListScreen = () => {
                     name: teacherData.name || 'Teacher', // Provide default name
                     email: teacherData.email,
                     role: teacherData.role || 'teacher', // Assume role is teacher
-                    // Add other relevant fields from teacherData if necessary
+                    profilePictureURL: teacherData.profilePictureURL || '', // Default to empty string if not available
+                    status: teacherData.status || 'offline', // Default to offline if not available
                  };
                 console.log("Fetched teacher:", fetchedTeacher);
                 setTeachers([fetchedTeacher]); // Set state with an array containing the teacher
@@ -79,28 +85,62 @@ const StudentTeacherListScreen = () => {
     }, [userID]) // Dependency array includes student's userID
     );
 
-    // Navigate to the student's chat screen (which should handle the teacher automatically)
     const handleTeacherPress = (teacher: User) => {
         console.log(`Navigating to chat with teacher: ${teacher.name} (ID: ${teacher.uid})`);
-        // Navigate to the StudentChatScreen. It should internally use the student's
-        // professorId to establish the correct chat context.
         router.push({
             pathname: '/screens/Chat/StudentChatScreen',
             params: { professorId: teacher.uid }
           });
-          // Adjust path if needed
     };
-
-    // --- Render Logic with StyleSheet ---
 
     if (loading) {
         return (
-            <View style={styles.centeredContainer}>
-                <ActivityIndicator size="large" color="#0000ff" />
-                <Text style={styles.loadingText}>Loading Teacher Info...</Text>
+          <Container>
+            <TopBarComponent title="Professor" />
+            {/* Skeleton da lista de estudantes */}
+            <View style={styles.sectionContainer}>
+              {[...Array(1)].map((_, index) => (
+                <MotiView
+                  key={index}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    marginBottom: 20,
+                    paddingHorizontal: 16,
+                  }}
+                  from={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: index * 100 }}
+                >
+                  <Skeleton
+                    colorMode={isDark ? 'dark' : 'light'}
+                    height={48}
+                    width={48}
+                    radius="round"
+                  />
+                  <View style={{ marginLeft: 12 }}>
+                    <View style={{ marginBottom: 6 }}>
+                      <Skeleton
+                        colorMode={isDark ? 'dark' : 'light'}
+                        height={12}
+                        width={200}
+                        radius="round"
+                      />
+                    </View>
+                    <Skeleton
+                      colorMode={isDark ? 'dark' : 'light'}
+                      height={12}
+                      width={150}
+                      radius="round"
+                    />
+                  </View>
+                </MotiView>
+              ))}
             </View>
+          </Container>
         );
-    }
+      }
+      
 
     // Display error only if there's an error message and not loading
     if (error && !loading) {
@@ -123,9 +163,8 @@ const StudentTeacherListScreen = () => {
 
     // Render the list of teachers (usually just one)
     return (
-        <View style={styles.container}>
-             {/* Optional: Add a header */}
-             <Text style={styles.headerText}>Your Teacher</Text>
+        <Container>
+             <TopBarComponent title='Professor' />
             <FlatList
                 data={teachers}
                 renderItem={({ item }) => (
@@ -134,12 +173,12 @@ const StudentTeacherListScreen = () => {
                 keyExtractor={(item) => item.uid}
                 contentContainerStyle={styles.listContent}
             />
-        </View>
+        </Container>
     );
 };
 
 // --- StyleSheet Definitions ---
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({  
     centeredContainer: {
         flex: 1,
         justifyContent: 'center',
@@ -156,6 +195,10 @@ const styles = StyleSheet.create({
         color: '#dc2626', // Red color for errors
         fontSize: 16,
         textAlign: 'center',
+    },
+    sectionContainer: {
+        marginVertical: 10,
+        paddingTop: 16,
     },
      infoText: {
         fontSize: 16,

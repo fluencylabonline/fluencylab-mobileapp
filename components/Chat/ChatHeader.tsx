@@ -4,9 +4,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { TextComponent } from '../TextComponent';
 import { useTheme } from '@/constants/useTheme';
 import PersonIcon from '@/assets/icons/PersonIcon';
+import { StatusBar } from 'expo-status-bar';
 
 interface ChatHeaderProps {
-    recipientName: string;
+    recipientName: any;
     onBackPress: () => void;
     profilePictureURL?: string; // Optional prop for profile picture URL
 }
@@ -17,6 +18,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ recipientName, onBackPress, pro
 
     return (
         <View style={styles.container}>
+            <StatusBar style="auto" backgroundColor={colors.background.list}/>
             <TouchableOpacity onPress={onBackPress}>
                 <Ionicons name="arrow-back" size={24} color={colors.text.primary} /> {/* Adjust color if needed */}
             </TouchableOpacity>
@@ -44,7 +46,8 @@ const getStyles = (colors: any) => StyleSheet.create({
     container: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: 16,
+        padding: 8,
+        paddingBottom: 12,
         gap: 18,
         backgroundColor: colors.background.list,
     },

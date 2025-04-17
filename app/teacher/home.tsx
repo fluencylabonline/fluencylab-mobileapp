@@ -4,7 +4,7 @@ import { auth, db, storage } from "@/config/firebase";
 import { query, collection, where, getDocs, getDoc, doc } from "firebase/firestore";
 import { ref, getDownloadURL } from "firebase/storage";
 import { useState, useEffect } from "react";
-import { View, useColorScheme, StyleSheet, FlatList, Image } from 'react-native';
+import { View, StyleSheet, FlatList, Image } from 'react-native';
 import PersonIcon from '@/assets/icons/PersonIcon';
 import { TextComponent } from "@/components/TextComponent";
 import { Link } from 'expo-router';
@@ -21,7 +21,6 @@ export default function Index(){
     const { colors } = useTheme();
     const styles = getStyles(colors);
 
-    const backgroundColor = colors.background.primary;
 
     const fetchProfilePicture = async (uid: any) => {
       try {
@@ -136,7 +135,7 @@ export default function Index(){
                               source={{ uri: item.profilePictureURL }}
                               />
                           ) : (
-                              <View style={[styles.profileImagePlaceholder, { backgroundColor: backgroundColor }]}>
+                              <View style={[styles.profileImagePlaceholder, { backgroundColor: colors.background.primary }]}>
                                   <PersonIcon  />
                               </View>
                           )}

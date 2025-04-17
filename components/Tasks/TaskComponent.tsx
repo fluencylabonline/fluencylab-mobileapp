@@ -23,10 +23,7 @@ const TasksComponent: React.FC<TasksComponentProps> = ({ studentID, onClose }) =
   const styles = getStyles(colors);
 
   // Get today's day with first letter capitalized
-  const today = new Date();
-  const todayWeekday = new Intl.DateTimeFormat('pt-PT', { weekday: 'short' }).format(today);
-  const capitalizedToday = todayWeekday.charAt(0).toUpperCase() + todayWeekday.slice(1);
-
+  const today = 'Task';
   // Listen for real-time task updates from Firestore
   useEffect(() => {
     // Ensure studentID is valid before trying to create a listener
@@ -125,7 +122,7 @@ const TasksComponent: React.FC<TasksComponentProps> = ({ studentID, onClose }) =
       // Use arrayUnion to safely add the new task to the array for today
       // This handles the case where the day's array might not exist yet.
       await updateDoc(studentDocRef, {
-        [`tasks.${capitalizedToday}`]: arrayUnion(taskToAdd)
+        [`tasks.${today}`]: arrayUnion(taskToAdd)
       });
 
       showToast('Tarefa adicionada!', 'success', 3000, 'bottom');

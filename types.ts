@@ -56,6 +56,7 @@ export type Report = {
     role: 'student' | 'teacher';
     professorId?: string; // Only for students
     profilePictureURL?: string;
+    status?: 'online' | 'offline';
 }
 
 export interface Message {
@@ -63,5 +64,11 @@ export interface Message {
     text: string;
     senderId: string;
     timestamp: number;
-    // Add other message properties as needed
+    read: false;
+    replyTo?: {
+      id: string;
+      text: string;
+      senderId: string;
+    };
+    translation?: string;
 }

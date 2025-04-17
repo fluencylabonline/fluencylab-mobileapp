@@ -53,7 +53,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
         <Ionicons name={iconName} size={iconSize} color={iconColor} style={styles.icon} />
       )}
       <TextInput
-        style={[styles.input, { color: textColor }, style]}
+        style={[styles.input, { color: textColor, zIndex: 50 }, style]}
         placeholderTextColor={placeholderColor}
         {...textInputProps}
       />
@@ -74,6 +74,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 8,
     paddingHorizontal: 10,
+    marginHorizontal: 10,
     height: 50,
     margin: 3,
   },

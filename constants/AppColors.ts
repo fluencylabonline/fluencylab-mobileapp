@@ -1,7 +1,7 @@
 export const AppColors = {
   //Component colors
   textPrimary: {
-    light: '#050021', // #050021
+    light: 'rgb(57, 8, 97)', // #050021
     dark: '#FDF4DC', // #FDF4DC
   },
   textSecondary: {
@@ -14,23 +14,23 @@ export const AppColors = {
     dark: '#0D0D0D', // #0D0D0D
   },
   backgroundList: {
-    light: '#B7B7F4', // #B7B7F4
+    light: 'rgb(191, 191, 226)', // #B7B7F4
     dark: '#21212A', // #21212A
   },
   backgroundListSecondary: {
-    light: 'rgb(139, 139, 228)', //rgb(177, 177, 241)
+    light: 'rgb(201, 201, 223)', //rgb(177, 177, 241)
     dark: 'rgb(40, 40, 59)', //rgb(32, 32, 46)
   },
   cardsPrimary: {
-    light: '#8989FB', // #8989FB
+    light: 'rgb(189, 189, 233)', // #8989FB
     dark: '#151515', // #151515
   },
   cardsSecondary: {
-    light: '#464696', // #464696
+    light: 'rgb(215, 209, 230)', // #8989FB
     dark: '#131016', // #131016
   },
   bottomSheet: { //Or modals and dialogs
-    light: 'rgb(52, 33, 138)', //rgb(108, 108, 201)
+    light: 'rgb(226, 226, 226)', //rgb(108, 108, 201)
     dark: 'rgb(37, 37, 37)', //rgb(27, 27, 32)
   },
   modalOverlay: {

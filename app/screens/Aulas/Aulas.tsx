@@ -4,11 +4,11 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
-  TextInput,
+  useColorScheme,
   RefreshControl,
 } from 'react-native';
 import { collection, doc, updateDoc, onSnapshot } from 'firebase/firestore';
-import { db } from '@/config/firebase';
+import { auth, db } from '@/config/firebase';
 import { Link, router, useLocalSearchParams } from 'expo-router';
 import Container from '@/components/ContainerComponent';
 import InputComponent from '@/components/InputComponent';
@@ -20,6 +20,7 @@ import Loading from '@/components/Animation/Loading';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { useToast } from '@/components/Toast/useToast';
 import ButtonComponent from '@/components/ButtonComponent';
+import { fetchUserData } from '@/hooks/fetchUserData';
 
 interface Notebook {
   studentName: string;
@@ -34,6 +35,7 @@ interface Notebook {
 
 const Aulas: React.FC = () => {
   const { studentID } = useLocalSearchParams();
+  const [user, setUser] = useState<any>(undefined);
   const [notebooks, setNotebooks] = useState<Notebook[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredNotebooks, setFilteredNotebooks] = useState<Notebook[]>([]);
@@ -41,6 +43,9 @@ const Aulas: React.FC = () => {
   const { colors } = useTheme();
   const styles = getStyles(colors);
 
+  const colorScheme = useColorScheme();
+  const isDarkMode = colorScheme === 'dark';
+  
   const [loading, setLoading] = useState(true);
   
   // State for report bottom sheet
@@ -53,6 +58,24 @@ const Aulas: React.FC = () => {
   // BottomSheet ref and snap points
   const bottomSheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ['50%'], []);
+
+  useEffect(() => {
+          const unsubscribe = auth.onAuthStateChanged(async (authUser) => {
+          if (authUser) {
+          try {
+              const data = await fetchUserData(authUser.uid);
+              setUser(data);
+          } catch (error) {
+              console.error("Error fetching basic user data:", error);
+          } finally {
+              //
+              }
+          } else {
+              setUser(null);
+          }});
+  
+          return () => unsubscribe();
+  }, []);
 
   // Real-time subscription to the notebooks collection
   useEffect(() => {
@@ -129,7 +152,7 @@ const Aulas: React.FC = () => {
     }
   };
 
-  if (loading) {
+  if (loading || user === undefined) {
     return (
       <Container>
         <Loading />
@@ -140,7 +163,7 @@ const Aulas: React.FC = () => {
   return (
     <Container>
       <TopBarComponent
-        title="Aulas"
+        title="Cadernos"
         leftIcon={
           <TouchableOpacity onPress={router.back}>
             <Ionicons name="arrow-back-sharp" size={26} color={colors.text.primary} />
@@ -168,8 +191,8 @@ const Aulas: React.FC = () => {
                   params: {
                     notebookID: item.id,
                     studentID: item.student,
-                    role: 'student',
-                    darkMode: 'false',
+                    role: user?.role === 'teacher' ? 'teacher' : 'student',
+                    darkMode: isDarkMode.toString(),
                   },
                 }}
               >
@@ -184,18 +207,18 @@ const Aulas: React.FC = () => {
                   <TextComponent
                     weight="bold"
                     size="medium"
-                    style={[{ color: colors.text.secondary }]}
+                    style={[{ color: colors.text.primary }]}
                   >
                     {item.description}
                   </TextComponent>
                 </View>
               </Link>
-              {/* Report button */}
+              {user?.role === 'teacher' && (
               <TouchableOpacity
                 onPress={() => handleOpenReportSheet(item.id)}
               >
                 <Ionicons name="document-text-outline" size={24} color={colors.text.primary} />
-              </TouchableOpacity>
+              </TouchableOpacity>)}
             </View>
           )}
           ListEmptyComponent={<TextComponent>Nenhuma aula encontrada</TextComponent>}

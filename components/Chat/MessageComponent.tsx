@@ -74,7 +74,7 @@ const Message: React.FC<MessageProps> = ({
       <TouchableOpacity style={[styles.bubbleBase, { flexDirection: 'column', paddingRight: 8}]} onLongPress={onPress} activeOpacity={0.8}>
         {/* Reply preview if this message is a reply */}
         {message.replyTo && (
-            <View style={[styles.replyPreview, { backgroundColor: isCurrentUser ? colors.background.listSecondary : colors.background.primary}]}>
+            <View style={[styles.replyPreview, { backgroundColor: isCurrentUser ? colors.background.listSecondary : colors.background.listSecondary}]}>
               <View style={styles.replyLine} />
               <View style={styles.replyContent}>
                 <TextComponent 

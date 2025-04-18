@@ -427,7 +427,7 @@ const Flashcards: React.FC<FlashcardsProps> = ({}) => {
 
  const renderOtherDeckItem = ({ item }: { item: OtherDeck }) => (
     // Wrap with View, not TouchableOpacity, action buttons are inside
-    <View style={[styles.otherDeckItem, { backgroundColor: colors.cards.secondary }]}>
+    <View style={[styles.otherDeckItem, { backgroundColor: colors.cards.primary }]}>
       <View style={styles.otherDeckTextContainer}>
         <TextComponent weight="bold" size="medium" style={[styles.otherDeckName, { color: colors.text.primary }]}>{item.id}</TextComponent>
          {/* Optionally display tags here */}
@@ -440,7 +440,7 @@ const Flashcards: React.FC<FlashcardsProps> = ({}) => {
       <View style={styles.otherDeckActionsContainer}>
           {/* Button to add deck to user's own collection */}
           <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: colors.colors.teal }]} // Use Teal for Add
+            style={[styles.actionButton, { backgroundColor: colors.colors.tealLight }]} // Use Teal for Add
             onPress={() => handleAddingDeckPress(item.id)}
            >
              <Ionicons name="add" size={20} color="white" />

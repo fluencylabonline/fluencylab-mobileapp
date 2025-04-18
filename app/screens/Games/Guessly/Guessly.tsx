@@ -452,7 +452,7 @@ const GuesslyGameScreen = ({}) => {
                                     disabled={remainingAttempts <= 0 || !timerStarted}
                                 >
                                     <Ionicons name="play-skip-forward-outline" size={20} color={colors.colors.white} />
-                                    <TextComponent weight="bold" size="medium" color="white" style={styles.skipButtonText}> Pular ({remainingAttempts})</TextComponent>
+                                    <TextComponent weight="bold" size="medium" style={[styles.skipButtonText, {color: colors.colors.white}]}> Pular ({remainingAttempts})</TextComponent>
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={() => setShowInstructions(true)}>
                                     <Ionicons name="help-circle-outline" size={30} color={colors.colors.white} />
@@ -698,7 +698,7 @@ const getStyles = (colors: any) => StyleSheet.create({
         elevation: 5,
     },
     modalTitle: {
-        color: colors.colors.white, // Match top bar title color
+        color: colors.colors.text, // Match top bar title color
         marginBottom: 15,
         textAlign: 'center',
     },
@@ -707,12 +707,12 @@ const getStyles = (colors: any) => StyleSheet.create({
         marginBottom: 20,
      },
     modalStrongText: {
-        color: colors.colors.white,
+        color: colors.colors.text,
         marginBottom: 10,
         textAlign: 'left',
     },
     modalBodyText: {
-        color: colors.colors.white,
+        color: colors.colors.text,
         lineHeight: 20,
         marginBottom: 15,
         textAlign: 'left',
@@ -722,7 +722,7 @@ const getStyles = (colors: any) => StyleSheet.create({
         alignSelf: 'stretch',
     },
     listItem: {
-        color: colors.colors.white,
+        color: colors.colors.text,
         lineHeight: 20,
         marginBottom: 8,
         flexDirection: 'row',
@@ -731,7 +731,7 @@ const getStyles = (colors: any) => StyleSheet.create({
      bullet: {
         marginRight: 8,
         // fontWeight: 'bold', // Not necessary for bullet
-        color: colors.colors.white,
+        color: colors.colors.indigo,
      },
     modalStartButton: {
         backgroundColor: colors.colors.amber, // Use fallback if Colors not defined

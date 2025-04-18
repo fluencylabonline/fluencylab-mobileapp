@@ -677,13 +677,13 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ onClose }) => {
                 title="Entrar no Jogo"
                 onPress={() => joinGame(gameCodeInput.trim())}
                 disabled={!!gameId} // Disable if already in a game
-                color="indigo"
+                color="amber"
               />
               <ButtonComponent
                 title="Criar Jogo"
                 onPress={createGame}
                 disabled={!!gameId} // Disable if already in a game
-                color="teal"
+                color="tealLight"
               />
             </View>
           </>
@@ -724,11 +724,11 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ onClose }) => {
           enablePanDownToClose={true}
           backdropComponent={renderBackdrop}
           handleIndicatorStyle={{
-            backgroundColor: colors.colors.teal,
+            backgroundColor: colors.colors.amber,
             width: 65,
           }}
           backgroundStyle={{
-            backgroundColor: colors.background.primary,
+            backgroundColor: colors.bottomSheet.background,
           }}
         >
           <BottomSheetView style={styles.bottomSheetContentContainer}>
@@ -753,7 +753,7 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ onClose }) => {
                 title="Cancelar"
                 onPress={closeSentenceSheet} // Use handler to close
                 disabled={loading}
-                color="teal"
+                color="deepOrangeLight"
               />
               <ButtonComponent
                 title={
@@ -771,7 +771,7 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ onClose }) => {
                 }
                 onPress={handleMove}
                 disabled={loading}
-                color="teal"
+                color="tealLight"
               />
             </View>
           </BottomSheetView>
@@ -786,11 +786,11 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ onClose }) => {
           backdropComponent={renderBackdrop}
           // Apply theme background
           handleIndicatorStyle={{
-            backgroundColor: colors.colors.teal,
+            backgroundColor: colors.colors.amber,
             width: 65,
           }}
           backgroundStyle={{
-            backgroundColor: colors.background.primary,
+            backgroundColor: colors.bottomSheet.background,
           }}
         >
           {/* Use BottomSheetScrollView for scrollable content */}

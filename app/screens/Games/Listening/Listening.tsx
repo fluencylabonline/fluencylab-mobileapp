@@ -24,6 +24,7 @@ import { useTheme } from '@/constants/useTheme';
 import InputComponent from '@/components/InputComponent';
 import Loading from '@/components/Animation/Loading';
 import { router } from 'expo-router';
+import { withDecay } from 'react-native-reanimated';
 interface WordInput {
     word: string;
     isInput: boolean;
@@ -146,7 +147,7 @@ export default function ListeningPractice({ onClose }: ListeningPracticeProps) {
         <TouchableOpacity
             style={[
                 styles.audioItem,
-                {backgroundColor: colors.bottomSheet.background},
+                {backgroundColor: colors.cards.secondary, borderColor: colors.cards.primary, borderWidth: 1},
                 selectedAudio?.id === item.id && styles.audioItemSelected
             ]}
             onPress={() => handleAudioSelect(item)}
@@ -359,10 +360,10 @@ export default function ListeningPractice({ onClose }: ListeningPracticeProps) {
                             </ScrollView>
                              {!inputsDisabled && ( // Only show check button if not verified
                                 <TouchableOpacity
-                                    style={[styles.checkButton, {backgroundColor: colors.colors.indigo}]}
+                                    style={[styles.checkButton, {backgroundColor: colors.colors.tealLight}]}
                                     onPress={checkAnswers}
                                 >
-                                    <TextComponent size="medium" weight="bold" color="white">
+                                    <TextComponent size="medium" weight="bold" style={{ color: colors.colors.white }}>
                                         Verificar Respostas
                                     </TextComponent>
                                 </TouchableOpacity>
@@ -372,7 +373,7 @@ export default function ListeningPractice({ onClose }: ListeningPracticeProps) {
                                     style={[styles.checkButton, {backgroundColor: colors.colors.indigo, marginTop: 10}]} // Different color/margin
                                     onPress={() => prepareWordInputs(selectedAudio.transcript)} // Reset action
                                 >
-                                    <TextComponent size="medium" weight="bold" color="white">
+                                    <TextComponent size="medium" weight="bold" style={{ color: colors.colors.white }}>
                                         Tentar Novamente
                                     </TextComponent>
                                 </TouchableOpacity>
@@ -387,7 +388,6 @@ export default function ListeningPractice({ onClose }: ListeningPracticeProps) {
                     )}
                  </View>
 
-                {/* --- CONDITIONAL Player Rendering (Keyboard UP) --- */}
                 {isKeyboardVisible && selectedAudio && (
                     <View style={[styles.keyboardPlayerSection, { backgroundColor: colors.bottomSheet.background }]}>
                         <AudioPlayer
@@ -397,14 +397,10 @@ export default function ListeningPractice({ onClose }: ListeningPracticeProps) {
                         />
                     </View>
                 )}
-                 {/* --- END CONDITIONAL Player --- */}
-
             </KeyboardAvoidingView>
 
-
-            {/* --- CONDITIONAL Player Rendering (Keyboard DOWN - Original Position) --- */}
             {!isKeyboardVisible && (
-                <View style={[styles.playerSection, { backgroundColor: colors.bottomSheet.background }]}>
+                <View style={[styles.playerSection, { backgroundColor: colors.cards.primary }]}>
                     {selectedAudio ? (
                         <>
                             <TextComponent size="medium" weight="bold" style={styles.selectedAudioTitle} numberOfLines={1}>
@@ -413,9 +409,9 @@ export default function ListeningPractice({ onClose }: ListeningPracticeProps) {
                             <AudioPlayer
                                 sourceUrl={selectedAudio.url}
                                 playbackRate={playbackRate}
-                                minimal={false} // Use full version
+                                minimal={false}
                             />
-                            {/* Playback Speed Controls */}
+
                             <View style={styles.playbackRateContainer}>
                                 <TextComponent size="small" style={styles.playbackRateLabel}>Velocidade:</TextComponent>
                                 {PLAYBACK_RATES.map((rate) => (
@@ -460,12 +456,23 @@ export default function ListeningPractice({ onClose }: ListeningPracticeProps) {
                 keyboardBehavior="extend"
                 handleIndicatorStyle={{ backgroundColor: colors.colors.indigo, width: 65 }}
                 backgroundStyle={{
-                    ...styles.bottomSheetContainer,
                     backgroundColor: colors.bottomSheet.background,
-                }}
+                    borderRadius: 28,
+                
+                    // iOS Shadow
+                    shadowColor: "#000",
+                    shadowOffset: {
+                      width: 0,
+                      height: -4, // shadow at top of sheet
+                    },
+                    shadowOpacity: 10,
+                    shadowRadius: 10,
+                
+                    // Android Elevation
+                    elevation: 30,
+                  }}
             >
                 <View style={styles.bottomSheetContainer}>
-                    {/* Search Input */}
                     <InputComponent
                         placeholder="Buscar por título ou transcrição..."
                         value={searchText}
@@ -484,7 +491,7 @@ export default function ListeningPractice({ onClose }: ListeningPracticeProps) {
                                     style={[
                                         styles.filterChip,
                                         selectedLanguages.includes(lang) && styles.filterChipSelected,
-                                        {backgroundColor: colors.bottomSheet.background}
+                                        {backgroundColor: colors.cards.primary}
                                     ]}
                                     onPress={() => toggleLanguage(lang)}
                                 >
@@ -579,7 +586,6 @@ export default function ListeningPractice({ onClose }: ListeningPracticeProps) {
         flexDirection: 'row',
         flexWrap: 'wrap',
         alignItems: 'center', 
-        // justifyContent: 'center', // Optional: center words
     },
     wordContainer: {
         marginRight: 6, // Space between words/inputs
@@ -612,7 +618,6 @@ export default function ListeningPractice({ onClose }: ListeningPracticeProps) {
         marginTop: 15, // Space above the button
         paddingVertical: 12,
         paddingHorizontal: 20,
-        backgroundColor: '#E64E17',
         borderRadius: 8,
         alignItems: 'center',
     },
@@ -626,15 +631,8 @@ export default function ListeningPractice({ onClose }: ListeningPracticeProps) {
         paddingHorizontal: 15,
         borderTopLeftRadius: 22,
         borderTopRightRadius: 22,
-        // --- FIX START ---
-        // Ensure this section renders below the BottomSheet
-        // zIndex works on iOS and sometimes Android depending on context
-        // elevation forces rendering order on Android (lower is further back)
         zIndex: 0,
-         // If zIndex: 0 isn't enough on Android, explicitly set elevation low
-         // (BottomSheet usually has a high elevation internally)
          ...(Platform.OS === 'android' && { elevation: 0 }),
-        // --- FIX END ---
     },
     selectedAudioTitle: {
         textAlign: 'center',
@@ -732,7 +730,7 @@ export default function ListeningPractice({ onClose }: ListeningPracticeProps) {
         marginBottom: 10,
     },
     audioItemSelected: {
-        backgroundColor: colors.colors.indigo,
+        backgroundColor: colors.cards.primary,
         borderColor: colors.colors.indigo,
     },
     languageLabel: {

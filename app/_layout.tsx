@@ -10,6 +10,7 @@ import { fetchUserData } from '@/hooks/fetchUserData';
 import * as Notifications from 'expo-notifications';
 import { registerForPushNotificationsAsync, createNotificationListener, createNotificationResponseListener } from '@/utils/notificationUtils';
 import useFetchUserID from '@/hooks/fetchUserID';
+import { ThemeProvider } from '@/constants/ThemeContext';
 
 
 export default function RootLayout() {
@@ -105,6 +106,7 @@ export default function RootLayout() {
   }
 
 return (
+  <ThemeProvider>
     <ToastProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <StatusBar style="dark" translucent={true} />
@@ -124,5 +126,6 @@ return (
         </Stack>
       </GestureHandlerRootView>
     </ToastProvider>
+  </ThemeProvider>
   );
 }

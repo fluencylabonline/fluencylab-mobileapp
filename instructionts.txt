@@ -1,0 +1,37 @@
+  const sendTestNotification = async () => {
+    if (!notificationsEnabled) {
+      showToast("Enable notifications first", "error");
+      return;
+    }
+    try {
+      await NotificationManager.sendImmediateNotification(
+        "Test Notification",
+        "This is a test notification from your app!",
+        { test: true }
+      );
+      showToast("Test notification sent!", "success");
+    } catch (error) {
+      console.error("Failed to send notification:", error);
+      showToast("Failed to send notification", "error");
+    }
+  };
+
+   {/* Test notification button */}
+          <TouchableOpacity
+            style={[
+              styles.testNotificationButton,
+              {
+                backgroundColor: notificationsEnabled
+                  ? colors.colors.indigo
+                  : "#cccccc",
+                opacity: notificationsEnabled ? 1 : 0.7,
+              },
+            ]}
+            onPress={sendTestNotification}
+            disabled={!notificationsEnabled}
+          >
+            <Ionicons name="notifications" size={20} color="#FFFFFF" />
+            <TextComponent style={styles.buttonText}>
+              Send Test Notification
+            </TextComponent>
+          </TouchableOpacity>

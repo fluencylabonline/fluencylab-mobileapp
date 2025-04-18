@@ -1,9 +1,9 @@
 import { useColorScheme } from 'react-native';
 import { AppColors } from './AppColors';
+import { useThemeContext } from './ThemeContext';
 
 export const useTheme = () => {
-  const colorScheme = useColorScheme() ?? 'light';
-  const isDark = colorScheme === 'dark';
+  const { isDark, themeMode } = useThemeContext();
 
   const themeColors = {
     text: {
@@ -47,8 +47,7 @@ export const useTheme = () => {
 
   return {
     isDark,
-    theme: colorScheme,
+    theme: themeMode,
     colors: themeColors,
   };
-  
 };

@@ -280,7 +280,6 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
        }
    }, []); // No dependencies needed if it only uses setters
 
-
   const handleAddDeckAsTask = useCallback(async () => {
     if (!selectedStudentId || !selectedDeck || !isMountedRef.current) {
       Alert.alert("Erro", "Selecione um aluno e um deck para atribuir a tarefa.");
@@ -368,12 +367,7 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
     setFeedback(isCorrect ? "Correto!" : `Errado! Resposta: ${correctOption?.option || 'N/A'}`);
     setFeedbackColor(isCorrect ? colors.colors.black : colors.colors.black);
     if (isCorrect) setScore((prevScore) => prevScore + 1);
-
-    setShowNextButton(true); // *** ADDED: Show the Next button ***
-    // *** REMOVED: setTimeout for automatic advancement ***
-    // timeoutIdRef.current = setTimeout(() => {
-    //   if (isMountedRef.current) goToNextQuestion();
-    // }, 3000);
+    setShowNextButton(true);
 
   }, [userAnswer, playQuestions, currentQuestionIndex, closePlayQuiz]); // Removed goToNextQuestion from deps
 
@@ -385,7 +379,6 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
        deck.deckTitle.toLowerCase().includes(searchQuery.toLowerCase())
    );
 
-   // Memoized Render Deck Item
    const renderDeckItem = useCallback(({ item }: { item: Deck }) => (
        <View style={[styles.deckItemContainer, { backgroundColor: colors.background.list, borderColor: colors.background.listSecondary || colors.colors.black }]}>
            <TouchableOpacity onPress={() => openPlayQuiz(item)} style={styles.deckTouchable} disabled={!item.questions || item.questions.length === 0}>
@@ -399,8 +392,6 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
        </View>
    ), [colors.cards.primary, colors.text.secondary, colors.text.primary, userScores, userRole, openPlayQuiz]); // Memoization deps
 
-
-    // Memoized Render Option Item for Quiz Play
     const renderPlayOption = useCallback(({ item }: { item: Option }) => {
         const isSelected = userAnswer === item.option;
         let dynamicBackgroundColor = colors.background.list;
@@ -417,12 +408,12 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
                 dynamicBackgroundColor = colors.colors.deepOrangeLight; iconName = "close-circle"; // Solid X
                 iconColor = colors.colors.white; textColor = colors.colors.white;
             } else { // Incorrect, not selected
-                 dynamicBackgroundColor = colors.cards.primary; iconName = "ellipse-outline"; // Faded/disabled look
+                dynamicBackgroundColor = colors.cards.secondary; iconName = "ellipse-outline"; // Faded/disabled look
                 iconColor = colors.text.secondary; textColor = colors.colors.white;
             }
         } else { // Selection phase (no answer yet)
              // Style for selectable options (could add hover effect if needed)
-             dynamicBackgroundColor = colors.cards.primary; // Default background
+             dynamicBackgroundColor = colors.cards.secondary; // Default background
              iconName = "ellipse-outline";
              iconColor = colors.background.list; // Use primary text color for selection icons
              textColor = colors.colors.white;
@@ -447,27 +438,23 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
         );
     }, [userAnswer, colors.cards.primary, colors.text.secondary, colors.text.primary, handleAnswerSelect]); // Memoization deps
 
-
-    // Dismiss Keyboard wrapper
     const DismissKeyboard = ({ children }: { children: React.ReactNode }) => (
         <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()} accessible={false}>
           {children}
         </TouchableWithoutFeedback>
     );
 
-  // --- Main Return ---
-  if (isLoadingAuth) {
-      return (
-          <Container style={styles.centered}>
-            <LoadingComponent />    
-          </Container>
-      );
-  }
+    if (isLoadingAuth) {
+        return (
+            <Container style={styles.centered}>
+                <LoadingComponent />    
+            </Container>
+        );
+    }
 
   return (
     <DismissKeyboard>
     <Container>
-
         <TopBarComponent
             title="Quiz"
             leftIcon={<Ionicons name="arrow-back-outline" size={24} color={colors.text.primary} onPress={() => router.back()} />}
@@ -480,7 +467,6 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
             placeholderTextColor={colors.text.secondary}
         />
         
-        {/* Show loading indicator specifically when fetching decks initially */}
         {isLoadingData && decks.length === 0 && !searchQuery && (
              <ActivityIndicator size="large" color={colors.text.primary} style={styles.loadingIndicator} />
         )}
@@ -503,7 +489,7 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
 
          <Modal
              visible={isPlayModalVisible}
-             animationType="fade"
+             animationType="slide"
              onRequestClose={closePlayQuiz} // Use callback for hardware back button
              transparent={true}
              statusBarTranslucent={true}
@@ -511,7 +497,6 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
              <View style={styles.modalOverlay}>
                  <View style={[styles.modalContainer, { backgroundColor: colors.cards.primary }]}>
                      <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
-                           {/* Check selectedDeck and playQuestions robustly */}
                            {selectedDeck && playQuestions && playQuestions.length > 0 ? (
                              <>
                              <View style={[styles.modalHeader, {borderColor: colors.text.secondary || colors.colors.black}]}>
@@ -521,36 +506,28 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
                                  </TouchableOpacity>
                              </View>
 
-                              {/* Render Timer only if quiz is not finished */}
                               {currentQuestionIndex < playQuestions.length && (
                                  <QuizTimer
                                      key={currentQuestionIndex} // Force re-mount on question change to reset timer state
                                      duration={60} // Or make this dynamic per deck/question
-                                     // *** MODIFIED: Timer plays only if modal is open, quiz not finished, AND no answer selected yet ***
                                      isPlaying={isPlayModalVisible && currentQuestionIndex < playQuestions.length && userAnswer === null}
                                      onFinish={goToNextQuestion} // Timer expiration moves to next question/finish
                                      resetKey={currentQuestionIndex} // Use index to signal reset
                                  />
                               )}
 
-
                                {currentQuestionIndex < playQuestions.length ? (
-                                   // --- Active Question View ---
                                    <View style={styles.playArea}>
                                        <TextComponent style={[styles.questionCountText, { color: colors.text.secondary }]}>
                                            Pergunta {currentQuestionIndex + 1} de {playQuestions.length}
                                        </TextComponent>
                                        <TextComponent weight="bold" size="medium" style={[styles.playQuestionTitle, { color: colors.text.primary }]}>
-                                           {/* Safe access to question title */}
                                            {playQuestions[currentQuestionIndex]?.questionTitle || "Carregando pergunta..."}
                                        </TextComponent>
-
-                                       {/* Render options only if they exist */}
                                        {playQuestions[currentQuestionIndex]?.options ? (
                                            <FlatList
                                                 data={playQuestions[currentQuestionIndex].options}
                                                 renderItem={renderPlayOption}
-                                                // More robust key: includes question index and option text
                                                 keyExtractor={(item, index) => `play-opt-${currentQuestionIndex}-${item.option}-${index}`}
                                                 style={styles.playOptionsList}
                                                 scrollEnabled={false} // Usually not needed for 4-5 options
@@ -560,26 +537,16 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
                                            <ActivityIndicator color={colors.text.primary} style={{marginTop: 20}}/>
                                        )}
 
-                                       {/* Feedback shown only after answering 
-                                       {userAnswer !== null && (
-                                            <View style={[styles.feedbackBox, { backgroundColor: feedbackColor || 'transparent' }]}>
-                                                 {feedback ? <TextComponent weight="bold" style={styles.feedbackText}>{feedback}</TextComponent> : null}
-                                             </View>
-                                       )}
-                                        */}
-
-                                       {/* *** ADDED: Conditional Next Button *** */}
                                        {showNextButton && (
                                            <ButtonComponent
                                                title={currentQuestionIndex >= playQuestions.length - 1 ? "Finalizar Quiz" : "Próxima Pergunta"}
                                                onPress={goToNextQuestion}
-                                               style={{ marginTop: 20, width: '90%' }} // Adjust styling as needed
-                                               color="indigo" // Or your preferred color
+                                               style={{ marginTop: 20, width: '90%' }}
+                                               color="indigo"
                                            />
                                        )}
                                    </View>
                                ) : (
-                                   // --- Quiz Finished View ---
                                    <View style={styles.playArea}>
                                        <Ionicons name="trophy-outline" size={60} color={colors.colors.amber} style={{marginBottom: 15}}/>
                                        <TextComponent weight="bold" size="large" style={[styles.finalScoreTitle, { color: colors.text.primary }]}>Quiz Completo!</TextComponent>
@@ -589,7 +556,6 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
                                )}
                                </>
                            ) : (
-                               // --- Loading/Error State within Modal ---
                                <View style={styles.centered}>
                                    <ActivityIndicator size="large" color={colors.text.primary} />
                                    <TextComponent style={{color: colors.text.primary, marginTop: 10}}>Carregando Quiz...</TextComponent>
@@ -601,8 +567,6 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
              </View>
          </Modal>
 
-
-        {/* Assign Task Modal */}
         <Modal
             visible={isStudentModalVisible}
             animationType="fade"
@@ -620,7 +584,6 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
                         </View>
                         <TextComponent style={{marginBottom: 10, color: colors.text.secondary, paddingHorizontal: 20}}>Atribuir "{selectedDeck?.deckTitle || 'Deck selecionado'}" para:</TextComponent>
 
-                        {/* Loading indicator specific to student list */}
                         {isLoadingData && students.length === 0 && ( <ActivityIndicator size="small" color={colors.text.primary} style={{marginVertical: 20}}/> )}
 
                         {students.length > 0 ? (
@@ -641,7 +604,6 @@ const QuizScreen: React.FC<{ navigation?: any, onClose?: () => void }> = ({ navi
                                 extraData={selectedStudentId} // Ensure re-render on selection
                             />
                         ) : (
-                           // Show "No students" only if not loading
                            !isLoadingData && <TextComponent style={[styles.emptyListText, {color: colors.text.secondary, marginVertical: 20}]}>Nenhum aluno encontrado.</TextComponent>
                         )}
 

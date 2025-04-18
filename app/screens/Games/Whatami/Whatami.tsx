@@ -453,7 +453,7 @@ import React, {
                   title="Entrar no Jogo"
                   onPress={handleJoinGame}
                   disabled={isLoading || !joinGameCodeInput}
-                  color="indigo" // Example color
+                  color="amber" // Example color
                   style={styles.buttonStyle}
                 />
                  <TextComponent style={styles.orText}>ou</TextComponent>
@@ -461,7 +461,7 @@ import React, {
                   title="Criar Jogo"
                   onPress={createGame}
                   disabled={isLoading}
-                  color="teal" // Example color
+                  color="tealLight" // Example color
                   style={styles.buttonStyle}
                 />
               </View>
@@ -507,7 +507,7 @@ import React, {
                     title={isLoading ? <ActivityIndicator size="small" color={colors.text.primary} /> : "Enviar Chute"}
                     onPress={handleGuess}
                     disabled={currentTurnPlayerId !== userId || isLoading || !guessInput}
-                    color="teal" // Example color
+                    color="tealLight" // Example color
                   />
                 </View>
               )}
@@ -534,7 +534,7 @@ import React, {
                   <ButtonComponent
                       title="Jogar Novamente"
                       onPress={handleStartNewGame}
-                      color="indigo" // Example color
+                      color="tealLight" // Example color
                   />
               </View>
           )}

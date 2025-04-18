@@ -1,38 +1,68 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Alert } from 'react-native';
-
-import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet';
-
+import {
+  View,
+  Text,
+  StyleSheet,
+  Alert,
+  Modal,
+  Dimensions,
+  Pressable,
+  Animated,
+  FlatList,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-
 import { db, auth } from '@/config/firebase';
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import { useTheme } from '@/constants/useTheme';
 
-  type Notification = {
-    id: string;
-    content?: string;
-    status?: {
-      notice?: boolean;
-      information?: boolean;
-      tip?: boolean;
-    };
-    sendTo?: {
-      professors?: boolean;
-      students?: boolean;
-    };
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+
+type Notification = {
+  id: string;
+  content?: string;
+  status?: {
+    notice?: boolean;
+    information?: boolean;
+    tip?: boolean;
   };
+  sendTo?: {
+    professors?: boolean;
+    students?: boolean;
+  };
+};
 
-  interface BottomSheetNotificationProps {
-    visible: boolean;
-    onUpdateNotificationCount: (count: number) => void;
-  }
+interface BottomSheetNotificationProps {
+  visible: boolean;
+  onUpdateNotificationCount: (count: number) => void;
+  onClose: () => void;
+}
 
-const BottomSheetNotification: React.FC<BottomSheetNotificationProps> = ({ visible, onUpdateNotificationCount }) => {
+const BottomSheetNotification: React.FC<BottomSheetNotificationProps> = ({
+  visible,
+  onUpdateNotificationCount,
+  onClose,
+}) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [userRole, setUserRole] = useState<string | null>(null);
   const { colors } = useTheme();
   const styles = getStyles(colors);
+  const translateY = useState(new Animated.Value(SCREEN_HEIGHT))[0];
+
+  useEffect(() => {
+    if (visible) {
+      Animated.timing(translateY, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(translateY, {
+        toValue: SCREEN_HEIGHT,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [visible]);
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -42,16 +72,16 @@ const BottomSheetNotification: React.FC<BottomSheetNotificationProps> = ({ visib
         const fetchedNotifications = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-        }));
+        })) as Notification[];
         setNotifications(fetchedNotifications);
       } catch (error) {
         console.error('Error fetching notifications:', error);
-        Alert.alert('Error', 'Failed to fetch notifications.');
+        Alert.alert('Erro', 'Não foi possível carregar as notificações.');
       }
     };
 
-  const fetchUserData = async () => {
-    const user = auth.currentUser;
+    const fetchUserData = async () => {
+      const user = auth.currentUser;
       if (user) {
         try {
           const userRef = doc(db, 'users', user.uid);
@@ -59,14 +89,13 @@ const BottomSheetNotification: React.FC<BottomSheetNotificationProps> = ({ visib
           if (userDoc.exists()) {
             const userData = userDoc.data();
             setUserRole(userData.role);
-          } else {
-            console.log('User not found');
           }
         } catch (error) {
           console.error('Error fetching user data:', error);
         }
       }
     };
+
     fetchNotifications();
     fetchUserData();
   }, []);
@@ -96,92 +125,104 @@ const BottomSheetNotification: React.FC<BottomSheetNotificationProps> = ({ visib
   };
 
   return (
-    <BottomSheet
-      index={visible ? 0 : -1}
-      snapPoints={['70%', '100%']}
-      enablePanDownToClose={true}
-      handleIndicatorStyle={{ backgroundColor: colors.colors.white, width: 65 }}
-      backgroundStyle={{
-        ...styles.bottomSheetShadow,
-        backgroundColor: colors.bottomSheet.background,
-      }}
-    >
-      <Text style={styles.sheetTitle}>Notificações</Text>
-      <BottomSheetFlatList
-        data={getFilteredNotifications()}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View
-            style={[
-              styles.notificationItem,
-              {
-                backgroundColor:
+    <Modal visible={visible} animationType="none" transparent onRequestClose={onClose}>
+      <Pressable style={styles.backdrop} onPress={onClose} />
+      <Animated.View style={[styles.bottomSheetContainer, { transform: [{ translateY }] }]}>
+        <View style={styles.handleBar} />
+        <Text style={styles.sheetTitle}>Notificações</Text>
+
+        <FlatList
+          data={getFilteredNotifications()}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={{ paddingBottom: 30, paddingHorizontal: 16 }}
+          renderItem={({ item }) => (
+            <View
+              style={[
+                styles.notificationItem,
+                {
+                  backgroundColor:
+                    item.status?.notice
+                      ? colors.colors.amber
+                      : item.status?.information
+                      ? colors.colors.indigo
+                      : item.status?.tip
+                      ? colors.colors.teal
+                      : 'white',
+                },
+              ]}
+            >
+              <Ionicons
+                name={
                   item.status?.notice
-                    ? colors.colors.amber
+                    ? 'alert-circle-outline'
                     : item.status?.information
-                    ? colors.colors.indigo
+                    ? 'information-circle-outline'
                     : item.status?.tip
-                    ? colors.colors.teal
-                    : 'white',
-              },
-            ]}
-          >
-            <Ionicons
-              name={
-                item.status?.notice
-                  ? 'alert-circle-outline'
-                  : item.status?.information
-                  ? 'information-circle-outline'
-                  : item.status?.tip
-                  ? 'checkmark-circle-outline'
-                  : 'ellipse-outline'
-              }
-              size={24}
-              color="white"
-            />
-            <Text style={styles.notificationText}>{item.content}</Text>
-          </View>
-        )}
-        ListEmptyComponent={<Text style={styles.noNotifications}>Nenhuma notificação nova.</Text>}
-      />
-    </BottomSheet>
+                    ? 'checkmark-circle-outline'
+                    : 'ellipse-outline'
+                }
+                size={24}
+                color="white"
+              />
+              <Text style={styles.notificationText}>{item.content}</Text>
+            </View>
+          )}
+          ListEmptyComponent={<Text style={styles.noNotifications}>Nenhuma notificação nova.</Text>}
+        />
+      </Animated.View>
+    </Modal>
   );
 };
 
-const getStyles = (colors: any) => StyleSheet.create({  
-  bottomSheetShadow: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 35,
-    borderRadius: 16,
-  },
-  sheetTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginVertical: 10,
-    color: colors.text.primary,
-  },
-  notificationItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 10,
-    marginVertical: 5,
-    marginHorizontal: 15,
-    borderRadius: 8,
-  },
-  notificationText: {
-    marginLeft: 10,
-    color: 'white',
-    flex: 1,
-  },
-  noNotifications: {
-    textAlign: 'center',
-    marginVertical: 20,
-    color: colors.text.secondary,
-  },
-});
+const getStyles = (colors: any) =>
+  StyleSheet.create({
+    backdrop: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    },
+    bottomSheetContainer: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      height: SCREEN_HEIGHT * 0.65,
+      backgroundColor: colors.bottomSheet.background,
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+      paddingTop: 16,
+    },
+    handleBar: {
+      alignSelf: 'center',
+      width: 70,
+      height: 5,
+      borderRadius: 2.5,
+      backgroundColor: colors.colors.white,
+      marginBottom: 10,
+    },
+    sheetTitle: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      textAlign: 'center',
+      marginBottom: 22,
+      color: colors.text.primary,
+    },
+    notificationItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: 10,
+      marginVertical: 5,
+      borderRadius: 8,
+    },
+    notificationText: {
+      marginLeft: 10,
+      color: 'white',
+      flex: 1,
+    },
+    noNotifications: {
+      textAlign: 'center',
+      marginVertical: 20,
+      color: colors.text.secondary,
+    },
+  });
 
 export default BottomSheetNotification;

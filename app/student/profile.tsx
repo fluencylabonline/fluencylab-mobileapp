@@ -177,6 +177,7 @@ export default function StudentProfile(){
             <BottomSheetNotification 
                 visible={isNotificationVisible} 
                 onUpdateNotificationCount={setNotificationCount}
+                onClose={() => setIsNotificationVisible(false)}
             />
         </Container>
     )

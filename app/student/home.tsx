@@ -9,6 +9,8 @@ import { TextComponent } from "@/components/TextComponent";
 import { useTheme } from "@/constants/useTheme";
 import TopBarComponent from '@/components/TopBarComponent';
 import useFetchUserID from '@/hooks/fetchUserID';
+import { router } from 'expo-router';
+import MaterialBottomSheet from '../screens/Aluno/Components/MaterialBottomSheet';
 
 export default function Home() {
   const { userID } = useFetchUserID();
@@ -16,7 +18,8 @@ export default function Home() {
   const { colors } = useTheme();
   const styles = getStyles(colors);
   const { showToast } = useToast();
-  
+  const [ showMaterial, setShowMaterial ] = useState<boolean>(false);
+
   const data = {
     cadernos: require("../../assets/images/student/cadernos.png"),
     tarefas: require("../../assets/images/student/tarefas.png"),
@@ -73,12 +76,12 @@ export default function Home() {
     <Container>
       <TopBarComponent 
         title="Início" 
-        rightIcon={<Ionicons name="book-outline" size={26} color={colors.text.secondary} />}
+        rightIcon={<Ionicons onPress={() => setShowMaterial(true)} name="copy-outline" size={26} color={colors.text.secondary} />}
       />
 
       <View style={styles.cardsContainer}>
-        <View style={styles.card_one}>
-          <TextComponent weight='bold' size="xLarge" style={{ marginRight: 66 }}>Cadernos</TextComponent>
+        <View style={styles.card_one} onTouchStart={() => router.push(`/screens/Aulas/Aulas?studentID=${studentID}`)}>
+          <TextComponent weight='bold' size="xLarge">Cadernos</TextComponent>
           <Image source={data.cadernos} style={styles.image} />
         </View>
 
@@ -114,6 +117,15 @@ export default function Home() {
           <Image source={data.tarefas} style={styles.image} />
         </View>
       </View>
+
+      {showMaterial && (
+        <MaterialBottomSheet
+        visible={showMaterial}
+        studentID={studentID as string}
+        onClose={() => setShowMaterial(false)}
+      />
+      
+      )}
     </Container>
   );
 }
@@ -127,7 +139,7 @@ const getStyles = (colors: any) =>
       alignItems: 'center',
       justifyContent: 'flex-start',
       paddingVertical: 16,
-      gap: 16,
+      gap: 12,
     },
     card_one: {
       backgroundColor: colors.background.list,
@@ -142,7 +154,7 @@ const getStyles = (colors: any) =>
       backgroundColor: colors.background.list,
       borderRadius: 16,
       width: '95%',
-      minHeight: '50%',
+      flex: 1,
       overflow: "hidden",
       gap: 16,
       paddingBottom: 22,

@@ -154,7 +154,7 @@ const MaterialsComponent: React.FC<MaterialsComponentProps> = ({ studentID }) =>
       />
       <ButtonComponent color='indigo' title='Upload de arquivo' onPress={handleFileUpload} />
 
-      <Modal visible={isModalOpen} transparent animationType="fade">
+      <Modal visible={isModalOpen} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={cardStyle}>
             <TextComponent weight="bold" size="medium" style={styles.modalTitle}>
